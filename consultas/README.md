@@ -1,1 +1,1 @@
-# GDD-MY_APOLO_SQL
+# Aca subimos scripts de consultas de la DB
