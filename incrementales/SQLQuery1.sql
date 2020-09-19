@@ -17,27 +17,37 @@ CREATE TABLE MY_APOLO_SQL.Cliente(
 -----------------------------------------------------------------------------------------------------------------------------------
 
 CREATE TABLE MY_APOLO_SQL.Factura(
-	fact_id_factura int identity(1,1) NOT NULL,
-  fact_fecha datetime()
-	fact_numero
-  fact_precio_facturado
-  fact_cantidad_facturada
-  fact_id_cliente
-  fact_id_sucursal
-  CONSTRAINT PK_Cliente PRIMARY KEY (clie_id_cliente)
-  FOREIGN KEY (fact_id_sucursal) REFERENCES Sucur(PersonID)
+	fact_id_factura NUMERIC(6) IDENTITY, 
+	fact_fecha DATETIME2(3),
+	fact_numero DECIMAL(18,0),
+	fact_precio_facturado DECIMAL(18,2),
+	fact_cantidad_facturada DECIMAL(18,0)
+
+	CONSTRAINT PK_Factura PRIMARY KEY (fact_id_factura),
+	fact_clie_id_cliente NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Cliente(clie_id_cliente),
+	fact_sucu_id_sucursal NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal),
+	fact_auto_id_auto NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Auto(auto_id_auto)
 )
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
-CREATE TABLE MY_APOLO_SQL.Factura(
-	fact_id_factura int identity(1,1) NOT NULL,
-  fact_fecha datetime()
-	fact_numero
-  fact_precio_facturado
-  fact_cantidad_facturada
-  fact_id_cliente
-  fact_id_sucursal
+CREATE TABLE MY_APOLO_SQL.Sucursal(
+	sucu_id_sucursal NUMERIC(6) IDENTITY, 
+	sucu_mail NVARCHAR(255),
+	sucu_telefono DECIMAL(18,0),
+	sucu_direccion NVARCHAR(255),
+
+	CONSTRAINT PK_Sucursal PRIMARY KEY (sucu_id_sucursal),
+	sucu_ciud_id_ciudad NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Ciudad(ciud_id_ciudad),
+)
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE MY_APOLO_SQL.Ciudad(
+	ciud_id_ciudad NUMERIC(6) IDENTITY, 
+	ciud_nombre NVARCHAR(255),
+
+	CONSTRAINT PK_Ciudad PRIMARY KEY (ciud_id_ciudad),
 )
 
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -87,8 +97,40 @@ CREATE TABLE MY_APOLO_SQL.Modelo(
 	mode_nombre NVARCHAR(255) ,
 	mode_potencia DECIMAL(18,0) ,
 
-	CONSTRAINT PK_Tipo_Caja PRIMARY KEY (mode_id_modelo),
-	mode_part_id_auto_parte NUMERIC(6) FOREIGN KEY  REFERENCES MY_APOLO_SQL.Auto_Parte(mode_part_id_auto_parte)
+	CONSTRAINT PK_Modelo PRIMARY KEY (mode_id_modelo),
+)
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE MY_APOLO_SQL.Fabricante(
+	fabr_id_fabricante NUMERIC(6) IDENTITY,
+	fabr_nombre NVARCHAR(255) ,
+
+	CONSTRAINT PK_Fabricante PRIMARY KEY (fabr_id_fabricante),
+)
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE MY_APOLO_SQL.Auto_Parte(
+	part_id_auto_parte NUMERIC(6) IDENTITY ,
+	part_vendida BIT default 0 ,  --0 significa que no se vendio
+	part_precio DECIMAL(18,2) ,
+	part_codigo DECIMAL(18,0) ,
+	part_descripcion NVARCHAR(255) ,
+
+	CONSTRAINT PK_Auto_Parte PRIMARY KEY (part_id_auto_parte),
+	part_mode_id_modelo NUMERIC(6) FOREIGN KEY  REFERENCES MY_APOLO_SQL.Modelo(mode_id_modelo),
+	part_fabr_id_fabricante NUMERIC(6) FOREIGN KEY  REFERENCES MY_APOLO_SQL.Fabricante(fabr_id_fabricante),
+	part_rubr_id_rubro NUMERIC(6) FOREIGN KEY  REFERENCES MY_APOLO_SQL.Rubro(rubr_id_rubro)
+)
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE MY_APOLO_SQL.Rubro(
+	rubr_id_rubro NUMERIC(6) IDENTITY ,
+	rubr_nombre NVARCHAR(255) ,
+
+	CONSTRAINT PK_Rubro PRIMARY KEY (rubr_id_rubro),
 )
 
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -129,6 +171,8 @@ select * from gd_esquema.Maestra
 DELETE FROM MY_APOLO_SQL.Cliente
 
 DROP TABLE MY_APOLO_SQL.Cliente
+
+DELETE FROM MY_APOLO_SQL.Tipo_Transmision
 
 DROP TABLE MY_APOLO_SQL.Tipo_Transmision
  
