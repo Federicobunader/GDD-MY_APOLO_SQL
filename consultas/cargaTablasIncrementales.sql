@@ -1,70 +1,44 @@
-USE GD2C2020
 
---CLIENTE
---habria que tener en cuenta 
-select
-	DISTINCT
-	CLIENTE_NOMBRE
-	CLIENTE_APELLIDO,
-	CLIENTE_DNI
-from gd_esquema.Maestra
-where CLIENTE_DNI IS NOT NULL
+--No ejecutar a menos que quieras consumir los recursos de tu pc
+--Optimizar
+--Carga de clientes (Hay algunos clientes que tienen el mismo dni pero distinto nombre y apeliido por eso armo el historial, considero los datos del cliente como los datos con las que efectuo la ultima compra)
+DECLARE @DNI DECIMAL(18,0);
+DECLARE @maxFecha DATETIME2 (3);
+DECLARE @IdCLiente NUMERIC(6);
+DECLARE dni_cursor CURSOR  
+    FOR SELECT DISTINCT CLIENTE_DNI, max(COMPRA_FECHA) FROM gd_esquema.Maestra GROUP BY CLIENTE_DNI
+OPEN dni_cursor
+FETCH NEXT FROM dni_cursor
+INTO @DNI, @maxFecha
+WHILE @@FETCH_STATUS = 0  
+BEGIN
+	--Obtener IdCliente
+	INSERT INTO Cliente 
+	SELECT top 1
+		CLIENTE_NOMBRE,
+		CLIENTE_APELLIDO,
+		CLIENTE_DIRECCION,
+		CLIENTE_DNI,
+		CLIENTE_FECHA_NAC,
+		CLIENTE_MAIL
+	FROM gd_esquema.Maestra WHERE CLIENTE_DNI = @DNI AND COMPRA_FECHA = @maxFecha
+	SET @IdCLiente = @@IDENTITY
 
---SUCURSAL
-select
-	DISTINCT
-	SUCURSAL_DIRECCION,
-	SUCURSAL_CIUDAD
-from gd_esquema.Maestra
-where SUCURSAL_CIUDAD IS NOT NULL
-
-select * from gd_esquema.Maestra
-
---AUTO_PARTE
-select 
-	DISTINCT
-	AUTO_PARTE_CODIGO,
-	AUTO_PARTE_DESCRIPCION
-from gd_esquema.Maestra
-
---MODELO
-select 
-	DISTINCT
-	MODELO_CODIGO,
-	MODELO_NOMBRE
-from gd_esquema.Maestra
-
---TRANSMISION
-select 
-	DISTINCT
-	TIPO_TRANSMISION_CODIGO,
-	TIPO_TRANSMISION_DESC
-from gd_esquema.Maestra
-
---TIPO CAJA
-select 
-	DISTINCT
-	TIPO_CAJA_CODIGO,
-	TIPO_CAJA_DESC
-from gd_esquema.Maestra
-
---TIPO AUTO
-select 
-	DISTINCT
-	TIPO_AUTO_CODIGO,
-	TIPO_AUTO_DESC
-from gd_esquema.Maestra
-
---MOTOR
---no se de que la juega el motoro le faltan datos
-select 
-	DISTINCT
-	TIPO_MOTOR_CODIGO
-from gd_esquema.Maestra
-
---FABRICANTE
-select 
-	DISTINCT
-	FABRICANTE_NOMBRE
-from gd_esquema.Maestra
+	--Historial
+	INSERT INTO Cliente_Historial 
+	SELECT 
+		DISTINCT
+		CLIENTE_NOMBRE,
+		CLIENTE_APELLIDO,
+		CLIENTE_DIRECCION,
+		CLIENTE_DNI,
+		CLIENTE_FECHA_NAC,
+		CLIENTE_MAIL,
+		@IdCLiente
+	FROM gd_esquema.Maestra WHERE CLIENTE_DNI = @DNI
+	FETCH NEXT FROM dni_cursor   
+    INTO @DNI, @maxFecha
+END   
+CLOSE dni_cursor;  
+DEALLOCATE dni_cursor; 
 
