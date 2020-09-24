@@ -23,21 +23,6 @@ BEGIN
 		CLIENTE_MAIL
 	FROM gd_esquema.Maestra WHERE CLIENTE_DNI = @DNI AND COMPRA_FECHA = @maxFecha
 	SET @IdCLiente = @@IDENTITY
-
-	--Historial
-	INSERT INTO Cliente_Historial 
-	SELECT 
-		DISTINCT
-		CLIENTE_NOMBRE,
-		CLIENTE_APELLIDO,
-		CLIENTE_DIRECCION,
-		CLIENTE_DNI,
-		CLIENTE_FECHA_NAC,
-		CLIENTE_MAIL,
-		@IdCLiente
-	FROM gd_esquema.Maestra WHERE CLIENTE_DNI = @DNI
-	FETCH NEXT FROM dni_cursor   
-    INTO @DNI, @maxFecha
 END   
 CLOSE dni_cursor;  
 DEALLOCATE dni_cursor; 

@@ -26,8 +26,8 @@ GO
 -----------------------------------------------------------------------------------------------------------------------------------
 
 CREATE TABLE MY_APOLO_SQL.Fabricante(
-	fabr_id_fabricante NUMERIC(6) IDENTITY ,
-	fabr_nombre NUMERIC(6) NOT NULL ,
+	fabr_id_fabricante NUMERIC(6) IDENTITY (1,1) NOT NULL ,
+	fabr_nombre nvarchar(250) NOT NULL ,
 
 	CONSTRAINT PK_Fabricante PRIMARY KEY (fabr_id_fabricante),
 )
@@ -73,7 +73,7 @@ CREATE TABLE MY_APOLO_SQL.Tipo_Transmision(
 
 TRUNCATE TABLE MY_APOLO_SQL.Tipo_Transmision
 
-INSERT INTO MY_APOLO_SQL.Tipo_Transmision(tipo_trans_codigo,tipo_tran_descripcion) 
+INSERT INTO MY_APOLO_SQL.Tipo_Transmision(tipo_tran_codigo,tipo_tran_descripcion) 
 SELECT DISTINCT TIPO_TRANSMISION_CODIGO, TIPO_TRANSMISION_DESC 
 FROM gd_esquema.Maestra
 WHERE TIPO_TRANSMISION_CODIGO IS NOT NULL
@@ -91,7 +91,7 @@ CREATE TABLE MY_APOLO_SQL.Tipo_Motor(
 
 TRUNCATE TABLE MY_APOLO_SQL.Tipo_Motor
 
-INSERT INTO MY_APOLO_SQL.Tipo_Motor(tipo_trans_codigo) 
+INSERT INTO MY_APOLO_SQL.Tipo_Motor(tipo_moto_codigo) 
 SELECT DISTINCT TIPO_MOTOR_CODIGO
 FROM gd_esquema.Maestra
 WHERE TIPO_MOTOR_CODIGO IS NOT NULL
@@ -155,8 +155,6 @@ CREATE TABLE MY_APOLO_SQL.Auto(
 	CONSTRAINT auto_sucu_id_sucursal FOREIGN KEY (auto_sucursal_id) REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal)
 )
 
-select FABRICANTE_NOMBRE from gd_esquema.Maestra
-group by FABRICANTE_NOMBRE
 
 TRUNCATE TABLE MY_APOLO_SQL.Auto
 
@@ -165,11 +163,46 @@ TRUNCATE TABLE MY_APOLO_SQL.Auto
 INSERT INTO MY_APOLO_SQL.Auto(auto_detalle_patente,auto_fecha_alta,auto_cantidad_kilometros,auto_precio,auto_fabr_id_fabricante,auto_mode_id_modelo,auto_sucursal_id) 
 SELECT DISTINCT AUTO_PATENTE,AUTO_FECHA_ALTA,AUTO_CANT_KMS,
 (SELECT PRECIO_FACTURADO * 1.2 FROM gd_esquema.Maestra WHERE AUTO_PATENTE = auto_patente AND AUTO_PATENTE IS NOT NULL),
-(SELECT TOP 1 fabr_id_fabricante FROM MY_APOLO_SQL.Fabricante JOIN gd_esquema.Maestra ON  fabr_nombre = FABRICANTE_NOMBRE JOIN MY_APOLO_SQL.Auto ON AUTO_PATENTE = auto_detalle_patente AND FABRICANTE_NOMBRE IS NOT NULL), -- REVISAR
+(SELECT TOP 1 fabr_id_fabricante 
+	FROM MY_APOLO_SQL.Fabricante 
+JOIN gd_esquema.Maestra ON  fabr_nombre = FABRICANTE_NOMBRE 
+JOIN MY_APOLO_SQL.Auto ON AUTO_PATENTE = auto_detalle_patente AND FABRICANTE_NOMBRE IS NOT NULL), -- REVISAR
+
 (SELECT TOP 1 mode_id_modelo FROM MY_APOLO_SQL.Modelo JOIN gd_esquema.Maestra ON  mode_nombre = MODELO_NOMBRE WHERE mode_nombre = MODELO_NOMBRE AND MODELO_NOMBRE IS NOT NULL),
 (SELECT TOP 1 sucu_id_sucursal FROM MY_APOLO_SQL.Sucursal JOIN gd_esquema.Maestra ON  sucu_mail = SUCURSAL_MAIL WHERE sucu_mail = SUCURSAL_MAIL AND SUCURSAL_MAIL IS NOT NULL)
 FROM gd_esquema.Maestra
 WHERE AUTO_PATENTE IS NOT NULL
+
+TRUNCATE TABLE MY_APOLO_SQL.Auto
+
+INSERT INTO 
+MY_APOLO_SQL.Auto(
+auto_detalle_patente,
+auto_fecha_alta,
+auto_cantidad_kilometros,
+auto_precio,auto_fabr_id_fabricante,auto_mode_id_modelo,auto_sucursal_id) 
+SELECT DISTINCT 
+AUTO_PATENTE,
+AUTO_FECHA_ALTA,
+AUTO_CANT_KMS,
+PRECIO_FACTURADO * 1.2,
+--(SELECT PRECIO_FACTURADO * 1.2 
+--FROM gd_esquema.Maestra 
+--WHERE AUTO_PATENTE = auto_patente AND AUTO_PATENTE IS NOT NULL),
+(SELECT TOP 1 fabr_id_fabricante 
+FROM MY_APOLO_SQL.Fabricante AS Fabricante
+WHERE Maestra.FABRICANTE_NOMBRE =  Fabricante.fabr_nombre), -- REVISAR
+
+(SELECT TOP 1 mode_id_modelo 
+	FROM MY_APOLO_SQL.Modelo  as ModeloTbl
+WHERE ModeloTbl.mode_nombre = Maestra.MODELO_NOMBRE),
+
+(SELECT TOP 1 sucu_id_sucursal 
+	FROM MY_APOLO_SQL.Sucursal 	 as SucursalTbl
+ WHERE SucursalTbl.sucu_mail = Maestra.SUCURSAL_MAIL)
+
+FROM gd_esquema.Maestra AS Maestra
+WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NOT NULL
 
 select * from MY_APOLO_SQL.Auto
 
@@ -179,16 +212,39 @@ GO
 
 CREATE TABLE MY_APOLO_SQL.Auto_Parte(
 	part_id_auto_parte NUMERIC(6) IDENTITY(1,1) NOT NULL  ,
-	part_id_auto NUMERIC(6) NOT NULL ,
-	part_vendida BIT default 0 ,  --0 significa que no se vendio
+	part_modelo_id NUMERIC(6) NOT NULL ,
+	part_cantidad_stock DECIMAL(18,0),
 	part_precio DECIMAL(18,2) ,
 	part_codigo DECIMAL(18,0) ,
 	part_descripcion NVARCHAR(255) ,
-	part_categoria NUMERIC(6) NOT NULL
+	part_fabricante_id NUMERIC(6) NOT NULL
 
 	CONSTRAINT PK_Auto_Parte PRIMARY KEY (part_id_auto_parte),
-	part_auto_id_auto NUMERIC(6) FOREIGN KEY  REFERENCES Auto(auto_id_auto)
+	CONSTRAINT FK_part_fabricante_id FOREIGN KEY (part_fabricante_id) REFERENCES MY_APOLO_SQL.Fabricante(fabr_id_fabricante),
+	CONSTRAINT FK_part_modelo_id FOREIGN KEY (part_modelo_id) REFERENCES MY_APOLO_SQL.Modelo(mode_id_modelo)
 )
+
+
+INSERT INTO MY_APOLO_SQL.Auto_Parte (
+	part_modelo_id 
+	,part_cantidad_stock
+	,part_precio
+	,part_codigo 
+	,part_descripcion 
+	,part_fabricante_id )
+SELECT   
+-- Tenes que joinear con Modelo para obtener el id MODELO_CODIGO,,
+sum(COMPRA_CANT) - (SELECT count(CANT_FACTURADA) from gd_esquema.Maestra as Vendidas WHERE FACTURA_NRO IS NOT NULL AND Vendidas.AUTO_PARTE_CODIGO = Maestra.AUTO_PARTE_CODIGO  GROUP BY AUTO_PARTE_CODIGO ) as Stock,
+COMPRA_PRECIO * 1.2
+AUTO_PARTE_CODIGO, 
+AUTO_PARTE_DESCRIPCION
+-- Tenes que joinear con Fabricante para obtener el id FABRICANTE_NOMBRE,
+FROM gd_esquema.Maestra as Maestra
+WHERE COMPRA_NRO IS NOT NULL AND AUTO_PARTE_CODIGO IS NOT NULL
+GROUP BY AUTO_PARTE_CODIGO, AUTO_PARTE_DESCRIPCION, MODELO_CODIGO, FABRICANTE_NOMBRE,COMPRA_PRECIO
+
+
+
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
