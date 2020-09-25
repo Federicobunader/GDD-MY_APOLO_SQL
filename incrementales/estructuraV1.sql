@@ -155,24 +155,6 @@ CREATE TABLE MY_APOLO_SQL.Auto(
 	CONSTRAINT auto_sucu_id_sucursal FOREIGN KEY (auto_sucursal_id) REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal)
 )
 
-
-TRUNCATE TABLE MY_APOLO_SQL.Auto
-
---REVISAR MIGRACION DE AUTOS, (LOS SELECTS)
-
-INSERT INTO MY_APOLO_SQL.Auto(auto_detalle_patente,auto_fecha_alta,auto_cantidad_kilometros,auto_precio,auto_fabr_id_fabricante,auto_mode_id_modelo,auto_sucursal_id) 
-SELECT DISTINCT AUTO_PATENTE,AUTO_FECHA_ALTA,AUTO_CANT_KMS,
-(SELECT PRECIO_FACTURADO * 1.2 FROM gd_esquema.Maestra WHERE AUTO_PATENTE = auto_patente AND AUTO_PATENTE IS NOT NULL),
-(SELECT TOP 1 fabr_id_fabricante 
-	FROM MY_APOLO_SQL.Fabricante 
-JOIN gd_esquema.Maestra ON  fabr_nombre = FABRICANTE_NOMBRE 
-JOIN MY_APOLO_SQL.Auto ON AUTO_PATENTE = auto_detalle_patente AND FABRICANTE_NOMBRE IS NOT NULL), -- REVISAR
-
-(SELECT TOP 1 mode_id_modelo FROM MY_APOLO_SQL.Modelo JOIN gd_esquema.Maestra ON  mode_nombre = MODELO_NOMBRE WHERE mode_nombre = MODELO_NOMBRE AND MODELO_NOMBRE IS NOT NULL),
-(SELECT TOP 1 sucu_id_sucursal FROM MY_APOLO_SQL.Sucursal JOIN gd_esquema.Maestra ON  sucu_mail = SUCURSAL_MAIL WHERE sucu_mail = SUCURSAL_MAIL AND SUCURSAL_MAIL IS NOT NULL)
-FROM gd_esquema.Maestra
-WHERE AUTO_PATENTE IS NOT NULL
-
 TRUNCATE TABLE MY_APOLO_SQL.Auto
 
 INSERT INTO 
@@ -180,11 +162,14 @@ MY_APOLO_SQL.Auto(
 auto_detalle_patente,
 auto_fecha_alta,
 auto_cantidad_kilometros,
+auto_vendido,
 auto_precio,auto_fabr_id_fabricante,auto_mode_id_modelo,auto_sucursal_id) 
+
 SELECT DISTINCT 
 AUTO_PATENTE,
 AUTO_FECHA_ALTA,
 AUTO_CANT_KMS,
+ 1,
 PRECIO_FACTURADO * 1.2,
 --(SELECT PRECIO_FACTURADO * 1.2 
 --FROM gd_esquema.Maestra 
@@ -202,11 +187,14 @@ WHERE ModeloTbl.mode_nombre = Maestra.MODELO_NOMBRE),
  WHERE SucursalTbl.sucu_mail = Maestra.SUCURSAL_MAIL)
 
 FROM gd_esquema.Maestra AS Maestra
-WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NOT NULL
+WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NULL
+
+
+
+
 
 select * from MY_APOLO_SQL.Auto
-
-GO
+select * from gd_esquema.Maestra
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -232,16 +220,19 @@ INSERT INTO MY_APOLO_SQL.Auto_Parte (
 	,part_codigo 
 	,part_descripcion 
 	,part_fabricante_id )
+
 SELECT   
--- Tenes que joinear con Modelo para obtener el id MODELO_CODIGO,,
+-- Tenes que joinear con Modelo para obtener el id MODELO_CODIGO,
+(SELECT TOP 1 mode_id_modelo FROM MY_APOLO_SQL.Modelo AS Modelo WHERE Modelo.mode_nombre = Maestra.MODELO_NOMBRE),
 sum(COMPRA_CANT) - (SELECT count(CANT_FACTURADA) from gd_esquema.Maestra as Vendidas WHERE FACTURA_NRO IS NOT NULL AND Vendidas.AUTO_PARTE_CODIGO = Maestra.AUTO_PARTE_CODIGO  GROUP BY AUTO_PARTE_CODIGO ) as Stock,
-COMPRA_PRECIO * 1.2
+COMPRA_PRECIO * 1.2,
 AUTO_PARTE_CODIGO, 
-AUTO_PARTE_DESCRIPCION
+AUTO_PARTE_DESCRIPCION,
 -- Tenes que joinear con Fabricante para obtener el id FABRICANTE_NOMBRE,
+(SELECT TOP 1 fabr_id_fabricante FROM MY_APOLO_SQL.Fabricante AS Fabricante WHERE Fabricante.fabr_nombre = Maestra.FABRICANTE_NOMBRE)
 FROM gd_esquema.Maestra as Maestra
 WHERE COMPRA_NRO IS NOT NULL AND AUTO_PARTE_CODIGO IS NOT NULL
-GROUP BY AUTO_PARTE_CODIGO, AUTO_PARTE_DESCRIPCION, MODELO_CODIGO, FABRICANTE_NOMBRE,COMPRA_PRECIO
+GROUP BY AUTO_PARTE_CODIGO, AUTO_PARTE_DESCRIPCION, MODELO_CODIGO,COMPRA_PRECIO,MODELO_NOMBRE,FABRICANTE_NOMBRE
 
 
 
@@ -258,6 +249,28 @@ CREATE TABLE MY_APOLO_SQL.Cliente(
 	clie_mail NVARCHAR(255),
 
   CONSTRAINT PK_Cliente PRIMARY KEY (clie_id_cliente)
+)
+
+TRUNCATE TABLE MY_APOLO_SQL.Cliente
+
+INSERT INTO MY_APOLO_SQL.Cliente(clie_nombre,clie_apellido,clie_direccion,clie_dni,clie_fecha_nacimiento,clie_mail) 
+SELECT DISTINCT CLIENTE_NOMBRE,CLIENTE_APELLIDO,CLIENTE_DIRECCION,CLIENTE_DNI,CLIENTE_FECHA_NAC,CLIENTE_MAIL
+FROM gd_esquema.Maestra
+WHERE CLIENTE_DNI IS NOT NULL
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE MY_APOLO_SQL.Factura(
+	fact_id_factura NUMERIC(6) IDENTITY, 
+	fact_fecha DATETIME2(3),
+	fact_numero DECIMAL(18,0),
+	fact_precio_facturado DECIMAL(18,2),
+	fact_cantidad_facturada DECIMAL(18,0)
+
+	CONSTRAINT PK_Factura PRIMARY KEY (fact_id_factura),
+	fact_clie_id_cliente NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Cliente(clie_id_cliente),
+	fact_sucu_id_sucursal NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal),
+	fact_auto_id_auto NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Auto(auto_id_auto)
 )
 
 -----------------------------------------------------------------------------------------------------------------------------------
