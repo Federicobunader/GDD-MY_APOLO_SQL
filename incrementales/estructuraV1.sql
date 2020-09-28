@@ -13,8 +13,7 @@ CREATE TABLE MY_APOLO_SQL.Sucursal(
 
 	CONSTRAINT PK_Sucursal PRIMARY KEY (sucu_id_sucursal),
 )
-
-TRUNCATE TABLE MY_APOLO_SQL.Sucursal
+GO
 
 INSERT INTO MY_APOLO_SQL.Sucursal(sucu_mail,sucu_telefono,sucu_direccion,sucu_ciudad) 
 SELECT DISTINCT SUCURSAL_MAIL,SUCURSAL_TELEFONO,SUCURSAL_DIRECCION,SUCURSAL_CIUDAD
@@ -190,12 +189,6 @@ FROM gd_esquema.Maestra AS Maestra
 WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NULL
 
 
-
-
-
-select * from MY_APOLO_SQL.Auto
-select * from gd_esquema.Maestra
-
 -----------------------------------------------------------------------------------------------------------------------------------
 
 CREATE TABLE MY_APOLO_SQL.Auto_Parte(
@@ -250,13 +243,13 @@ CREATE TABLE MY_APOLO_SQL.Cliente(
 
   CONSTRAINT PK_Cliente PRIMARY KEY (clie_id_cliente)
 )
+GO
+--TRUNCATE TABLE MY_APOLO_SQL.Cliente
 
-TRUNCATE TABLE MY_APOLO_SQL.Cliente
-
-INSERT INTO MY_APOLO_SQL.Cliente(clie_nombre,clie_apellido,clie_direccion,clie_dni,clie_fecha_nacimiento,clie_mail) 
-SELECT DISTINCT CLIENTE_NOMBRE,CLIENTE_APELLIDO,CLIENTE_DIRECCION,CLIENTE_DNI,CLIENTE_FECHA_NAC,CLIENTE_MAIL
-FROM gd_esquema.Maestra
-WHERE CLIENTE_DNI IS NOT NULL
+--INSERT INTO MY_APOLO_SQL.Cliente(clie_nombre,clie_apellido,clie_direccion,clie_dni,clie_fecha_nacimiento,clie_mail) 
+--SELECT DISTINCT CLIENTE_NOMBRE,CLIENTE_APELLIDO,CLIENTE_DIRECCION,CLIENTE_DNI,CLIENTE_FECHA_NAC,CLIENTE_MAIL
+--FROM gd_esquema.Maestra
+--WHERE CLIENTE_DNI IS NOT NULL
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -272,10 +265,23 @@ CREATE TABLE MY_APOLO_SQL.Factura(
 	fact_sucu_id_sucursal NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal),
 	fact_auto_id_auto NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Auto(auto_id_auto)
 )
-
+GO
 -----------------------------------------------------------------------------------------------------------------------------------
 
+CREATE TABLE MY_APOLO_SQL.Factura_AutoParte(
+	fact_ap_id NUMERIC(6) IDENTITY(1,1) NOT NULL,
+	fact_id_factura NUMERIC(6), 
+	fact_cantidad_facturada DECIMAL(18,0),
+	fact_auto_parte_id NUMERIC(6),
+	fact_precio_facturado DECIMAL(18,2)
+
+	CONSTRAINT PK_Factura_AutoParte PRIMARY KEY (fact_ap_id),
+	CONSTRAINT FK_Factura_AutoParte_Id FOREIGN KEY (fact_auto_parte_id) REFERENCES MY_APOLO_SQL.Auto_Parte(part_id_auto_parte),
+	CONSTRAINT FK_Factura_Numero_Id FOREIGN KEY (fact_id_factura) REFERENCES MY_APOLO_SQL.Factura(fact_id_factura)
+
+)
+GO
 
 COMMIT TRAN
-ROLLBACK TRAN
+--ROLLBACK TRAN
 
