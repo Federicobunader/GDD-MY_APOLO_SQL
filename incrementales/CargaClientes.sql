@@ -43,6 +43,7 @@ INNER JOIN (
 	on a.Cliente_DNI = #clientes.Cliente_DNI and a.fecha_compra = #clientes.Cliente_Compra
 ORDER BY #clientes.Cliente_DNI
 
+--Cargar clientes con UNIQUE KEY (DNI, Nombre, Apellido)
 
 
 --SELECT DISTINCT Cliente_DNI, max(Cliente_Compra) as fecha_compra from #clientes 
@@ -59,9 +60,9 @@ ORDER BY #clientes.Cliente_DNI
 --HAVING count(clie_dni) > 1
 
 
---SELECT * FROM MY_APOLO_SQL.Cliente where clie_dni in (37638888
---,42739188
---,20514527)
+SELECT * FROM MY_APOLO_SQL.Cliente where clie_dni in (37638888
+,42739188
+,20514527)
 
 --TRUNCATE TABLE MY_APOLO_SQL.Cliente 
 
@@ -69,6 +70,10 @@ ORDER BY #clientes.Cliente_DNI
 --Consideracion
 -- Tenemos 3 usuarios que realizar compras el mismo dia con diferentes datos de Nombre Apellido pero mismo dni
 
-
+select 
+Cliente_Nombre, Cliente_Apellido, Cliente_DNI
+ from #clientes
+ GROUP BY Cliente_Nombre, Cliente_Apellido, Cliente_DNI
+ HAVING count(Cliente_DNI) > 1
 
 
