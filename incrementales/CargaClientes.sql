@@ -1,3 +1,5 @@
+USE GD2C2020
+
 --tabla temporal para clientes
 Create table #clientes(
 	Cliente_Nombre nvarchar(255) NOT NULL,
@@ -8,7 +10,7 @@ Create table #clientes(
 	Cliente_Mail nvarchar(255) NULL,
 	Cliente_Compra datetime2(3) NULL
 )
-
+GO
 --Armo la tabla de los clientes
 -- hacer join de los distinct dni agrupados por max fecha 
 INSERT INTO #clientes
@@ -20,7 +22,7 @@ SELECT FAC_CLIENTE_NOMBRE, FAC_CLIENTE_APELLIDO, FAC_CLIENTE_DIRECCION, FAC_CLIE
 FROM gd_esquema.Maestra
 WHERE FAC_CLIENTE_DNI IS NOT NULL
 
-
+GO
 INSERT INTO MY_APOLO_SQL.Cliente (
 	clie_nombre,
 	clie_apellido,
@@ -28,21 +30,44 @@ INSERT INTO MY_APOLO_SQL.Cliente (
 	clie_dni,
 	clie_fecha_nacimiento,
 	clie_mail)
-SELECT Cliente_Nombre,
+SELECT 
+Cliente_Nombre,
 Cliente_Apellido,
 Cliente_Direccion,
 #clientes.Cliente_DNI, 
 Cliente_Fecha_Nac, 
 Cliente_Mail
  FROM #clientes 
-JOIN (
-	SELECT Cliente_DNI, max(Cliente_Compra) as fecha_compra from #clientes group by Cliente_DNI
-)a on a.Cliente_DNI = #clientes.Cliente_DNI and a.fecha_compra = #clientes.Cliente_Compra
+INNER JOIN (
+	SELECT DISTINCT Cliente_DNI, max(Cliente_Compra) as fecha_compra from #clientes group by Cliente_DNI) a 
+	on a.Cliente_DNI = #clientes.Cliente_DNI and a.fecha_compra = #clientes.Cliente_Compra
 ORDER BY #clientes.Cliente_DNI
 
 
 
+--SELECT DISTINCT Cliente_DNI, max(Cliente_Compra) as fecha_compra from #clientes 
+--where Cliente_DNI in (20514527
+--,37638888
+--,42739188
+--)
+--group by Cliente_DNI
 
+
+--SELECT clie_dni, count(clie_dni) as cantidad
+--FROM MY_APOLO_SQL.Cliente as Cliente
+--GROUP BY clie_dni 
+--HAVING count(clie_dni) > 1
+
+
+--SELECT * FROM MY_APOLO_SQL.Cliente where clie_dni in (37638888
+--,42739188
+--,20514527)
+
+--TRUNCATE TABLE MY_APOLO_SQL.Cliente 
+
+--Problema
+--Consideracion
+-- Tenemos 3 usuarios que realizar compras el mismo dia con diferentes datos de Nombre Apellido pero mismo dni
 
 
 
