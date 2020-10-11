@@ -4,29 +4,58 @@ GO
 DECLARE @T1 varchar(20) = 'Transaction1';  
 BEGIN TRAN @T1
 
+
+CREATE TABLE MY_APOLO_SQL.Ciudad(
+	ciud_id_ciudad NUMERIC(6) IDENTITY (1,1) NOT NULL ,
+	ciud_nombre nvarchar(255) NOT NULL ,
+
+	CONSTRAINT PK_Ciudad PRIMARY KEY (ciud_id_ciudad),
+)
+
+TRUNCATE TABLE MY_APOLO_SQL.Ciudad
+
+INSERT INTO MY_APOLO_SQL.Ciudad(ciud_nombre) 
+SELECT DISTINCT SUCURSAL_CIUDAD
+FROM gd_esquema.Maestra 
+WHERE SUCURSAL_CIUDAD IS NOT NULL
+
+GO
+
+SELECT * FROM MY_APOLO_SQL.Ciudad
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
 CREATE TABLE MY_APOLO_SQL.Sucursal(
 	sucu_id_sucursal NUMERIC(6) IDENTITY(1,1) NOT NULL , 
 	sucu_mail NVARCHAR(255),
 	sucu_telefono DECIMAL(18,0),
 	sucu_direccion NVARCHAR(255),
-	sucu_ciudad NVARCHAR(255),
 
 	CONSTRAINT PK_Sucursal PRIMARY KEY (sucu_id_sucursal),
+
+	sucu_ciud_id_ciudad NUMERIC(6) CONSTRAINT sucu_ciud_id_ciudad FOREIGN KEY (sucu_ciud_id_ciudad) REFERENCES MY_APOLO_SQL.Ciudad(ciud_id_ciudad)
 )
 GO
 
-INSERT INTO MY_APOLO_SQL.Sucursal(sucu_mail,sucu_telefono,sucu_direccion,sucu_ciudad) 
-SELECT DISTINCT SUCURSAL_MAIL,SUCURSAL_TELEFONO,SUCURSAL_DIRECCION,SUCURSAL_CIUDAD
+INSERT INTO MY_APOLO_SQL.Sucursal(sucu_mail,sucu_telefono,sucu_direccion,sucu_ciud_id_ciudad) 
+SELECT DISTINCT SUCURSAL_MAIL,SUCURSAL_TELEFONO,SUCURSAL_DIRECCION,
+(SELECT TOP 1 ciud_id_ciudad 
+	FROM MY_APOLO_SQL.Ciudad C1
+WHERE C1.ciud_nombre = Maestra.SUCURSAL_CIUDAD)
 FROM gd_esquema.Maestra
 WHERE SUCURSAL_MAIL IS NOT NULL
 
 GO
 
+SELECT * FROM MY_APOLO_SQL.Sucursal
+
+SELECT * FROM MY_APOLO_SQL.Sucursal S1 JOIN MY_APOLO_SQL.Ciudad ON sucu_ciud_id_ciudad = ciud_nombre
+
 -----------------------------------------------------------------------------------------------------------------------------------
 
 CREATE TABLE MY_APOLO_SQL.Fabricante(
 	fabr_id_fabricante NUMERIC(6) IDENTITY (1,1) NOT NULL ,
-	fabr_nombre nvarchar(250) NOT NULL ,
+	fabr_nombre nvarchar(255) NOT NULL ,
 
 	CONSTRAINT PK_Fabricante PRIMARY KEY (fabr_id_fabricante),
 )
@@ -146,12 +175,10 @@ CREATE TABLE MY_APOLO_SQL.Auto(
 	auto_precio DECIMAL(18,2),
 	auto_fabr_id_fabricante NUMERIC(6) not null,
 	auto_mode_id_modelo NUMERIC(6) not null, --se podria parametrizar
-	auto_sucursal_id NUMERIC(6) not null,
 
 	CONSTRAINT PK_Auto PRIMARY KEY (auto_id_auto),
 	CONSTRAINT auto_fabr_id_fabricante FOREIGN KEY (auto_fabr_id_fabricante) REFERENCES MY_APOLO_SQL.Fabricante(fabr_id_fabricante),
 	CONSTRAINT auto_mode_id_modelo FOREIGN KEY (auto_mode_id_modelo) REFERENCES MY_APOLO_SQL.Modelo(mode_id_modelo),
-	CONSTRAINT auto_sucu_id_sucursal FOREIGN KEY (auto_sucursal_id) REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal)
 )
 
 TRUNCATE TABLE MY_APOLO_SQL.Auto
@@ -162,32 +189,95 @@ auto_detalle_patente,
 auto_fecha_alta,
 auto_cantidad_kilometros,
 auto_vendido,
-auto_precio,auto_fabr_id_fabricante,auto_mode_id_modelo,auto_sucursal_id) 
+auto_precio,auto_fabr_id_fabricante,auto_mode_id_modelo) 
 
 SELECT DISTINCT 
 AUTO_PATENTE,
 AUTO_FECHA_ALTA,
 AUTO_CANT_KMS,
  1,
-PRECIO_FACTURADO * 1.2,
---(SELECT PRECIO_FACTURADO * 1.2 
---FROM gd_esquema.Maestra 
---WHERE AUTO_PATENTE = auto_patente AND AUTO_PATENTE IS NOT NULL),
+COMPRA_PRECIO * 1.2,
+
+/*(SELECT PRECIO_FACTURADO * 1.2 
+FROM gd_esquema.Maestra 
+WHERE AUTO_PATENTE = auto_patente AND AUTO_PATENTE IS NOT NULL), */
+
 (SELECT TOP 1 fabr_id_fabricante 
 FROM MY_APOLO_SQL.Fabricante AS Fabricante
 WHERE Maestra.FABRICANTE_NOMBRE =  Fabricante.fabr_nombre), -- REVISAR
 
 (SELECT TOP 1 mode_id_modelo 
 	FROM MY_APOLO_SQL.Modelo  as ModeloTbl
-WHERE ModeloTbl.mode_nombre = Maestra.MODELO_NOMBRE),
-
-(SELECT TOP 1 sucu_id_sucursal 
-	FROM MY_APOLO_SQL.Sucursal 	 as SucursalTbl
- WHERE SucursalTbl.sucu_mail = Maestra.SUCURSAL_MAIL)
+WHERE ModeloTbl.mode_nombre = Maestra.MODELO_NOMBRE)
 
 FROM gd_esquema.Maestra AS Maestra
 WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NULL
 
+CREATE TABLE MY_APOLO_SQL.Autos_Vendidos(
+	auto_id_auto NUMERIC(6) IDENTITY(1,1) NOT NULL ,
+	auto_detalle_patente NVARCHAR(50) ,
+	auto_fecha_alta DATETIME2(3) ,
+	auto_cantidad_kilometros DECIMAL(18,0) ,
+	auto_vendido BIT default 1,  --0 significa que no se vendio
+	auto_precio DECIMAL(18,2),
+
+	CONSTRAINT PK_Autos_Vendidos PRIMARY KEY (auto_id_auto),
+)
+
+INSERT INTO MY_APOLO_SQL.Autos_Vendidos(
+auto_detalle_patente,
+auto_fecha_alta,
+auto_cantidad_kilometros,
+auto_vendido,
+auto_precio) 
+
+SELECT DISTINCT 
+
+AUTO_PATENTE,
+AUTO_FECHA_ALTA,
+AUTO_CANT_KMS,
+1,
+COMPRA_PRECIO * 1.2
+
+FROM gd_esquema.Maestra 
+WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NOT NULL
+
+
+CREATE TABLE MY_APOLO_SQL.Autos_Totales(
+	auto_id_auto NUMERIC(6) IDENTITY(1,1) NOT NULL ,
+	auto_detalle_patente NVARCHAR(50) ,
+	auto_fecha_alta DATETIME2(3) ,
+	auto_cantidad_kilometros DECIMAL(18,0) ,
+	auto_vendido BIT default 1,  --0 significa que no se vendio
+	auto_precio DECIMAL(18,2),
+
+	CONSTRAINT PK_Autos_Totales PRIMARY KEY (auto_id_auto),
+)
+
+INSERT INTO MY_APOLO_SQL.Autos_Totales(
+auto_detalle_patente,
+auto_fecha_alta,
+auto_cantidad_kilometros,
+auto_vendido,
+auto_precio) 
+
+SELECT DISTINCT 
+
+AUTO_PATENTE,
+AUTO_FECHA_ALTA,
+AUTO_CANT_KMS,
+0,
+COMPRA_PRECIO * 1.2 AS Precio
+
+FROM gd_esquema.Maestra 
+WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NULL
+
+UPDATE MY_APOLO_SQL.Auto SET auto_vendido = 0 FROM MY_APOLO_SQL.Auto WHERE auto_detalle_patente IN 
+(
+	SELECT auto_detalle_patente FROM MY_APOLO_SQL.Autos_Totales
+	EXCEPT
+	SELECT auto_detalle_patente FROM MY_APOLO_SQL.Autos_Vendidos
+)
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
