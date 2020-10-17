@@ -333,14 +333,91 @@ CREATE TABLE MY_APOLO_SQL.Factura_Auto_Parte(
 	fact_part_part_id_auto_parte NUMERIC(6),
 	fact_part_cantidad DECIMAL(18,0)
 
-	--TERMINAR DE VER LAS FK
-
 	CONSTRAINT PK_Factura_Auto_Parte PRIMARY KEY (fact_auto_parte_id),
-	CONSTRAINT FK_fact_part_fact_id_factura FOREIGN KEY (fact_auto_parte_id) REFERENCES MY_APOLO_SQL.Auto_Parte(part_id_auto_parte),
-	CONSTRAINT FK_fact_part_part_id_auto_parte FOREIGN KEY (fact_id_factura) REFERENCES MY_APOLO_SQL.Factura(fact_id_factura)
+	CONSTRAINT FK_fact_part_part_id_auto_parte FOREIGN KEY (fact_part_part_id_auto_parte) REFERENCES MY_APOLO_SQL.Auto_Parte(part_id_auto_parte),
+	CONSTRAINT FK_fact_part_fact_id_factura FOREIGN KEY (fact_part_fact_id_factura) REFERENCES MY_APOLO_SQL.Factura(fact_id_factura)
 
 )
+
+TRUNCATE TABLE MY_APOLO_SQL.Factura_Auto_Parte
+
 GO
+
+CREATE PROCEDURE Migracion_Factura_Auto_Parte
+AS
+INSERT INTO MY_APOLO_SQL.Factura_Auto_Parte (fact_part_fact_id_factura,fact_part_part_id_auto_parte,fact_part_cantidad)
+SELECT
+(SELECT fact_id_factura FROM MY_APOLO_SQL.Factura F
+WHERE F.fact_numero = FACTURA_NRO AND F.fact_fecha = FACTURA_FECHA),
+(SELECT part_id_auto_parte FROM MY_APOLO_SQL.Auto_Parte AP
+WHERE AP.part_codigo = AUTO_PARTE_CODIGO AND AP.part_descripcion = AUTO_PARTE_DESCRIPCION),
+CANT_FACTURADA
+FROM gd_esquema.Maestra
+
+GO
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE MY_APOLO_SQL.Compra(
+	comp_id_compra NUMERIC(6) IDENTITY(1,1) NOT NULL,
+	comp_fecha DATETIME2(3), 
+	comp_numero DECIMAL(18,0),
+	comp_precio_compra DECIMAL(18,2),
+	comp_clie_id_cliente NUMERIC(6),
+	comp_sucu_id_sucursal NUMERIC (6),
+	comp_auto_id_auto NUMERIC (6)
+
+	CONSTRAINT PK_Compra PRIMARY KEY (comp_id_compra),
+	CONSTRAINT FK_comp_clie_id_cliente FOREIGN KEY (comp_clie_id_cliente) REFERENCES MY_APOLO_SQL.Cliente(clie_id_cliente),
+	CONSTRAINT FK_comp_sucu_id_sucursal FOREIGN KEY (comp_sucu_id_sucursal) REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal),
+	CONSTRAINT FK_comp_auto_id_auto FOREIGN KEY (comp_auto_id_auto) REFERENCES MY_APOLO_SQL.Auto(auto_id_auto)
+
+)
+
+TRUNCATE TABLE MY_APOLO_SQL.Compra
+
+GO
+
+CREATE PROCEDURE Migracion_Compra
+AS
+INSERT INTO MY_APOLO_SQL.Compra (comp_fecha,comp_numero,comp_precio_compra,comp_clie_id_cliente)
+SELECT
+(SELECT fact_id_factura FROM MY_APOLO_SQL.Factura)
+
+GO
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE MY_APOLO_SQL.Compra_Auto_Parte(
+	comp_auto_parte_id NUMERIC(6) IDENTITY(1,1) NOT NULL,
+	comp_part_comp_id_compra NUMERIC(6), 
+	comp_part_part_id_auto_parte NUMERIC(6),
+	comp_part_cantidad DECIMAL(18,0)
+
+	CONSTRAINT PK_Compra_Auto_Parte PRIMARY KEY (comp_auto_parte_id),
+	CONSTRAINT FK_comp_part_part_id_auto_parte FOREIGN KEY (comp_part_part_id_auto_parte) REFERENCES MY_APOLO_SQL.Auto_Parte(part_id_auto_parte),
+	CONSTRAINT FK_comp_part_comp_id_compra FOREIGN KEY (comp_part_comp_id_compra) REFERENCES MY_APOLO_SQL.Compra(comp_id_compra)
+
+)
+
+TRUNCATE TABLE MY_APOLO_SQL.Compra_Auto_Parte
+
+GO
+
+CREATE PROCEDURE Migracion_Compra_Auto_Parte
+AS
+INSERT INTO MY_APOLO_SQL.Compra_Auto_Parte (comp_part_comp_id_compra,comp_part_part_id_auto_parte,comp_part_cantidad)
+SELECT
+(SELECT comp_auto_id_auto FROM MY_APOLO_SQL.Compra C WHERE C.comp_numero = COMPRA_NRO AND C.comp_fecha = COMPRA_FECHA),
+(SELECT part_id_auto_parte FROM MY_APOLO_SQL.Auto_Parte AP
+WHERE AP.part_codigo = AUTO_PARTE_CODIGO AND AP.part_descripcion = AUTO_PARTE_DESCRIPCION),
+CANT_FACTURADA
+WHERE 
+FROM gd_esquema.Maestra
+
+GO
+
+-----------------------------------------------------------------------------------------------------------------------------------
 
 COMMIT TRAN
 --ROLLBACK TRAN
