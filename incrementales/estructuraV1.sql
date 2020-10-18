@@ -378,11 +378,38 @@ TRUNCATE TABLE MY_APOLO_SQL.Compra
 
 GO
 
+--CREATE PROCEDURE Migracion_Compra
+--AS
+--INSERT INTO MY_APOLO_SQL.Compra (comp_fecha,comp_numero,comp_precio_compra,comp_clie_id_cliente,comp_sucu_id_sucursal,comp_auto_id_auto)
+--SELECT COMPRA_FECHA,COMPRA_NRO,COMPRA_PRECIO,
+--(SELECT clie_id_cliente FROM MY_APOLO_SQL.Cliente C
+--WHERE C.clie_dni = CLIENTE_DNI AND C.clie_nombre = CLIENTE_NOMBRE AND C.clie_apellido = CLIENTE_APELLIDO) AS ID_CLIENTE,
+--(SELECT sucu_id_sucursal FROM MY_APOLO_SQL.Sucursal S
+--WHERE S.sucu_direccion = SUCURSAL_DIRECCION AND S.sucu_telefono = SUCURSAL_TELEFONO) AS ID_SUCURSAL,
+--(SELECT auto_id_auto FROM MY_APOLO_SQL.Auto A
+--WHERE A.auto_detalle_patente = AUTO_PATENTE AND A.auto_cantidad_kilometros = AUTO_CANT_KMS) AS ID_AUTO
+--FROM gd_esquema.Maestra
+--GROUP BY COMPRA_FECHA,COMPRA_NRO,COMPRA_PRECIO,CLIENTE_DNI,CLIENTE_NOMBRE,CLIENTE_APELLIDO,SUCURSAL_DIRECCION,SUCURSAL_TELEFONO,AUTO_PATENTE,AUTO_CANT_KMS
+--order by compra_nro
+
+
 CREATE PROCEDURE Migracion_Compra
 AS
-INSERT INTO MY_APOLO_SQL.Compra (comp_fecha,comp_numero,comp_precio_compra,comp_clie_id_cliente)
-SELECT
-(SELECT fact_id_factura FROM MY_APOLO_SQL.Factura)
+INSERT INTO MY_APOLO_SQL.Compra (comp_fecha,comp_numero,comp_precio_compra,comp_clie_id_cliente,comp_sucu_id_sucursal,comp_auto_id_auto)
+--Compra AutoParte
+SELECT compra_fecha,COMPRA_NRO, SUM(COMPRA_PRECIO) AS precio,  cliente.clie_id_cliente, sucursal.sucu_id_sucursal,NULL AS auto_id
+FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Sucursal ON SUCURSAL_DIRECCION = sucu_direccion
+JOIN MY_APOLO_SQL.Cliente ON CLIENTE_DNI = clie_dni AND CLIENTE_APELLIDO = clie_apellido
+WHERE  COMPRA_NRO IS NOT NULL AND AUTO_PATENTE IS NULL
+GROUP BY COMPRA_NRO, compra_fecha, sucursal.sucu_id_sucursal, cliente.clie_id_cliente
+UNION
+--Compra Auto
+SELECT compra_fecha,COMPRA_NRO, COMPRA_PRECIO AS precio, cliente.clie_id_cliente, sucursal.sucu_id_sucursal, auto.auto_id_auto AS auto_id
+FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Auto ON AUTO_PATENTE = auto_detalle_patente
+JOIN MY_APOLO_SQL.Sucursal ON SUCURSAL_DIRECCION = sucu_direccion
+JOIN MY_APOLO_SQL.Cliente ON CLIENTE_DNI = clie_dni AND CLIENTE_APELLIDO = clie_apellido
+WHERE  COMPRA_NRO IS NOT NULL AND AUTO_PATENTE IS NOT NULL
+GROUP BY COMPRA_NRO, compra_fecha, sucursal.sucu_id_sucursal, cliente.clie_id_cliente, auto_id_auto, COMPRA_PRECIO
 
 GO
 
@@ -404,16 +431,27 @@ TRUNCATE TABLE MY_APOLO_SQL.Compra_Auto_Parte
 
 GO
 
+--CREATE PROCEDURE Migracion_Compra_Auto_Parte
+--AS
+--INSERT INTO MY_APOLO_SQL.Compra_Auto_Parte (comp_part_comp_id_compra,comp_part_part_id_auto_parte,comp_part_cantidad)
+--SELECT
+
+--	(SELECT comp_id_compra FROM MY_APOLO_SQL.Compra C WHERE C.comp_numero = COMPRA_NRO AND C.comp_fecha = COMPRA_FECHA),
+
+--	(SELECT part_id_auto_parte FROM MY_APOLO_SQL.Auto_Parte AP
+--	WHERE AP.part_codigo = AUTO_PARTE_CODIGO AND AP.part_descripcion = AUTO_PARTE_DESCRIPCION),
+
+--	CANT_FACTURADA FROM gd_esquema.Maestra
+
+--WHERE (SELECT comp_id_compra FROM MY_APOLO_SQL.Compra C WHERE C.comp_numero = COMPRA_NRO AND C.comp_fecha = COMPRA_FECHA) = auto_parte_codigo and (SELECT part_id_auto_parte FROM MY_APOLO_SQL.Auto_Parte AP
+--WHERE AP.part_codigo = AUTO_PARTE_CODIGO AND AP.part_descripcion = AUTO_PARTE_DESCRIPCION) = compra_nro
+
 CREATE PROCEDURE Migracion_Compra_Auto_Parte
 AS
-INSERT INTO MY_APOLO_SQL.Compra_Auto_Parte (comp_part_comp_id_compra,comp_part_part_id_auto_parte,comp_part_cantidad)
-SELECT
-(SELECT comp_auto_id_auto FROM MY_APOLO_SQL.Compra C WHERE C.comp_numero = COMPRA_NRO AND C.comp_fecha = COMPRA_FECHA),
-(SELECT part_id_auto_parte FROM MY_APOLO_SQL.Auto_Parte AP
-WHERE AP.part_codigo = AUTO_PARTE_CODIGO AND AP.part_descripcion = AUTO_PARTE_DESCRIPCION),
-CANT_FACTURADA
-WHERE 
-FROM gd_esquema.Maestra
+INSERT INTO MY_APOLO_SQL.Compra_Auto_Parte (comp_part_comp_id_compra, comp_part_part_id_auto_parte, comp_part_cantidad)
+SELECT comp_id_compra,part_id_auto_parte, COMPRA_CANT FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Compra ON COMPRA_NRO = comp_numero
+JOIN MY_APOLO_SQL.Auto_Parte ON AUTO_PARTE_CODIGO = auto_parte.part_codigo
+WHERE COMPRA_NRO is not null AND AUTO_PARTE_CODIGO is not null
 
 GO
 
