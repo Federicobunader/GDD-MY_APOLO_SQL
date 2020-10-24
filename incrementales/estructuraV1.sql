@@ -237,12 +237,17 @@ INSERT INTO MY_APOLO_SQL.Auto_Parte (
 	,part_fabricante_id )
 
 SELECT   
-(SELECT TOP 1 mode_id_modelo FROM MY_APOLO_SQL.Modelo AS Modelo WHERE Modelo.mode_nombre = Maestra.MODELO_NOMBRE),
-sum(COMPRA_CANT) - (SELECT count(CANT_FACTURADA) from gd_esquema.Maestra as Vendidas WHERE FACTURA_NRO IS NOT NULL AND Vendidas.AUTO_PARTE_CODIGO = Maestra.AUTO_PARTE_CODIGO  GROUP BY AUTO_PARTE_CODIGO ) as Stock,
+(
+SELECT TOP 1 mode_id_modelo 
+FROM MY_APOLO_SQL.Modelo AS Modelo WHERE Modelo.mode_nombre = Maestra.MODELO_NOMBRE),
+sum(COALESCE(COMPRA_CANT,0)) - (SELECT sum(COALESCE(CANT_FACTURADA,0)) from gd_esquema.Maestra as Vendidas 
+WHERE FACTURA_NRO IS NOT NULL AND Vendidas.AUTO_PARTE_CODIGO = Maestra.AUTO_PARTE_CODIGO  
+GROUP BY AUTO_PARTE_CODIGO ) as Stock,
 COMPRA_PRECIO * 1.2,
 AUTO_PARTE_CODIGO, 
 AUTO_PARTE_DESCRIPCION,
-(SELECT TOP 1 fabr_id_fabricante FROM MY_APOLO_SQL.Fabricante AS Fabricante WHERE Fabricante.fabr_nombre = Maestra.FABRICANTE_NOMBRE)
+(SELECT TOP 1 fabr_id_fabricante FROM MY_APOLO_SQL.Fabricante AS Fabricante 
+WHERE Fabricante.fabr_nombre = Maestra.FABRICANTE_NOMBRE)
 FROM gd_esquema.Maestra as Maestra
 WHERE COMPRA_NRO IS NOT NULL AND AUTO_PARTE_CODIGO IS NOT NULL
 GROUP BY AUTO_PARTE_CODIGO, AUTO_PARTE_DESCRIPCION, MODELO_CODIGO,COMPRA_PRECIO,MODELO_NOMBRE,FABRICANTE_NOMBRE
@@ -273,6 +278,7 @@ CREATE PROCEDURE Migracion_Factura
 AS
 INSERT INTO MY_APOLO_SQL.Factura (fact_fecha,fact_numero,fact_precio_facturado,fact_clie_id_cliente,fact_sucu_id_sucursal,fact_auto_id_auto)
 SELECT
+DISTINCT
 FACTURA_FECHA,
 FACTURA_NRO,
 PRECIO_FACTURADO,
@@ -283,7 +289,7 @@ auto_id_auto
  JOIN MY_APOLO_SQL.Cliente as cli on FAC_CLIENTE_DNI = cli.clie_dni
  JOIN MY_APOLO_SQL.Sucursal as sucu on FAC_SUCURSAL_DIRECCION = sucu.sucu_direccion
  LEFT JOIN MY_APOLO_SQL.Auto AS Auto ON AUTO_PATENTE = auto.auto_detalle_patente
-where AUTO_PATENTE IS NOT NULL AND FACTURA_NRO IS NOT NULL
+where FACTURA_NRO IS NOT NULL
 ORDER BY FACTURA_NRO
 
 GO
@@ -457,7 +463,7 @@ END
 
 GO
 
-
+PRINT 'Procedures Creados Correctamente'
 BEGIN TRY
     BEGIN TRAN
 --Migracion de Datos
@@ -476,7 +482,6 @@ EXEC Migracion_Factura --OK
 EXEC Migracion_Compra --OK
 EXEC Migracion_Compra_Auto_Parte --OK
 EXEC Migracion_Auto --OK
-
 EXEC Migracion_Factura_Auto_Parte --OK
 
 
