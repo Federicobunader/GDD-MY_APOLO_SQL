@@ -53,7 +53,6 @@ CREATE TABLE MY_APOLO_SQL.BI_Tipo_Transmision(
 	CONSTRAINT PK_BI_Tipo_Transmision PRIMARY KEY (tipo_tran_id_tipo_transmision)
 );
 
-
 CREATE TABLE MY_APOLO_SQL.BI_Tipo_Motor(
 	tipo_moto_id_tipo_motor NUMERIC(6) IDENTITY,
 	tipo_moto_codigo DECIMAL(18,0) ,
@@ -76,8 +75,6 @@ CREATE TABLE MY_APOLO_SQL.BI_Tipo_Caja(
 
 	CONSTRAINT PK_BI_Tipo_Caja PRIMARY KEY (tipo_caja_id_tipo_caja)
 );
-
-
 
 CREATE TABLE MY_APOLO_SQL.BI_Auto(
 	auto_id_auto NUMERIC(6) IDENTITY(1,1) NOT NULL ,
@@ -107,15 +104,16 @@ CREATE TABLE MY_APOLO_SQL.BI_Cliente(
 	clie_nombre NVARCHAR(255) ,
 	clie_apellido NVARCHAR(255) ,
 	clie_direccion NVARCHAR(255) ,
-	clie_dni DECIMAL (18,0) ,
-	clie_fecha_nacimiento DATETIME2 (3),
+	clie_dni DECIMAL (18,0),
 	clie_mail NVARCHAR(255),
+	clie_fecha_nacimiento DATETIME2 (3),
+	clie_rango_edad decimal(1,0),
 
   CONSTRAINT PK_BI_Cliente PRIMARY KEY (clie_id_cliente),
   CONSTRAINT UC_BI_Cliente UNIQUE (clie_apellido,clie_dni)
 );
 
-CREATE TABLE MY_APOLO_SQL.BI_Factura(
+CREATE TABLE MY_APOLO_SQL.BI_Compra_Auto(
 	fact_id_factura NUMERIC(6) IDENTITY, 
 	fact_fecha DATETIME2(3),
 	fact_numero DECIMAL(18,0),
