@@ -113,37 +113,89 @@ CREATE TABLE MY_APOLO_SQL.BI_Cliente(
   CONSTRAINT UC_BI_Cliente UNIQUE (clie_apellido,clie_dni)
 );
 
-CREATE TABLE MY_APOLO_SQL.BI_Compra_Auto(
-	fact_id_factura NUMERIC(6) IDENTITY, 
-	fact_fecha DATETIME2(3),
-	fact_numero DECIMAL(18,0),
-	fact_precio_facturado DECIMAL(18,2),
+CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto(
+	cantidad_vendidos INTEGER,
+	precio_promedio DECIMAL(18,2),
+	ganancia DECIMAL (18,2),
 
-	CONSTRAINT PK_Factura PRIMARY KEY (fact_id_factura),
-	fact_clie_id_cliente NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Cliente(clie_id_cliente),
-	fact_sucu_id_sucursal NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal),
-	fact_auto_id_auto NUMERIC(6) FOREIGN KEY REFERENCES MY_APOLO_SQL.Auto(auto_id_auto)
+	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
+	tipo_caja_id_tipo_caja NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_id_tipo_caja),
+	tipo_auto_id_tipo_auto NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Auto(tipo_auto_id_tipo_auto),
+	tipo_moto_id_tipo_motor NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Motor(tipo_moto_id_tipo_motor),
+	tipo_tran_id_tipo_transmision NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Transmision(tipo_tran_id_tipo_transmision),
+	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
+	mode_id_modelo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Modelo(mode_id_modelo),
+	auto_id_auto NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Auto(auto_id_auto),
+	clie_id_cliente NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Cliente(clie_id_cliente),
+	sucu_id_sucursal NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Sucursal(sucu_id_sucursal)
 );
 
-CREATE TABLE MY_APOLO_SQL.BI_Compra(
-	comp_id_compra NUMERIC(6) IDENTITY(1,1) NOT NULL,
-	comp_fecha DATETIME2(3), 
-	comp_numero DECIMAL(18,0),
-	comp_precio_compra DECIMAL(18,2),
+CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto(
+	cantidad_vendidos INTEGER,
+	precio_promedio DECIMAL(18,2),
+	ganancia DECIMAL (18,2),
 
-	CONSTRAINT PK_Compra PRIMARY KEY (comp_id_compra),
-	comp_clie_id_cliente NUMERIC(6) CONSTRAINT FK_comp_clie_id_cliente FOREIGN KEY (comp_clie_id_cliente) REFERENCES MY_APOLO_SQL.Cliente(clie_id_cliente),
-	comp_sucu_id_sucursal NUMERIC (6) CONSTRAINT FK_comp_sucu_id_sucursal FOREIGN KEY (comp_sucu_id_sucursal) REFERENCES MY_APOLO_SQL.Sucursal(sucu_id_sucursal),
-	comp_auto_id_auto NUMERIC (6) CONSTRAINT FK_comp_auto_id_auto FOREIGN KEY (comp_auto_id_auto) REFERENCES MY_APOLO_SQL.Auto(auto_id_auto)
+	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
+	tipo_caja_id_tipo_caja NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_id_tipo_caja),
+	tipo_auto_id_tipo_auto NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Auto(tipo_auto_id_tipo_auto),
+	tipo_moto_id_tipo_motor NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Motor(tipo_moto_id_tipo_motor),
+	tipo_tran_id_tipo_transmision NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Transmision(tipo_tran_id_tipo_transmision),
+	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
+	mode_id_modelo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Modelo(mode_id_modelo),
+	auto_id_auto NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Auto(auto_id_auto),
+	clie_id_cliente NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Cliente(clie_id_cliente),
+	sucu_id_sucursal NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Sucursal(sucu_id_sucursal)
+);
 
+CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte(
+	cantidad_vendidos INTEGER,
+	precio_promedio DECIMAL(18,2),
+	ganancia DECIMAL (18,2),
+
+	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
+	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
+	mode_id_modelo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Modelo(mode_id_modelo),
+	auto_id_auto_parte NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Auto_Parte(part_id_auto_parte),
+	clie_id_cliente NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Cliente(clie_id_cliente),
+	sucu_id_sucursal NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Sucursal(sucu_id_sucursal)
+);
+
+CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte(
+	cantidad_vendidos INTEGER,
+	precio_promedio DECIMAL(18,2),
+	ganancia DECIMAL (18,2),
+
+	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
+	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
+	mode_id_modelo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Modelo(mode_id_modelo),
+	auto_id_auto_parte NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Auto_Parte(part_id_auto_parte),
+	clie_id_cliente NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Cliente(clie_id_cliente),
+	sucu_id_sucursal NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Sucursal(sucu_id_sucursal)
 );
 
 	PRINT 'Tablas Creadas Correctamente'
   COMMIT TRAN
 END TRY
+BEGIN CATCH
+    ROLLBACK TRAN
+
+    DECLARE @Problema VARCHAR(MAX)
+    SELECT @Problema = 'Ocurrió un problema en el script SQL: Numero ' + CONVERT(VARCHAR(10),ERROR_NUMBER()) + ' - ' + ERROR_MESSAGE() + ' - Linea: ' +  CONVERT(VARCHAR(10),ERROR_LINE())
+    RAISERROR(@Problema, 16,1)
+END CATCH
+
 
 GO
 -------------------CREACION PROCEDIMIENTOS---------------------------
+
+CREATE PROCEDURE Migracion_Hecho_Compra_Auto 
+AS
+	INSERT INTO MY_APOLO_SQL.BI_Hecho_Compra_Auto
+	SELECT * 
+	FROM MY_APOLO_SQL.Compra C
+	JOIN MY_APOLO_SQL.Auto A ON C.comp_auto_id_auto = A.auto_id_auto
+
+GO
 
 CREATE PROCEDURE Migracion_Ciudad
 AS
@@ -306,11 +358,3 @@ SELECT * FROM MY_APOLO_SQL.Auto
 
 ---------------------DROPEO DE TABLAS-------------------------
 
-BEGIN CATCH
-    ROLLBACK TRAN
-
-    DECLARE @Problema VARCHAR(MAX)
-    SELECT @Problema = 'Ocurrió un problema en el script SQL: Numero ' + CONVERT(VARCHAR(10),ERROR_NUMBER()) + ' - ' + ERROR_MESSAGE() + ' - Linea: ' +  CONVERT(VARCHAR(10),ERROR_LINE())
-    RAISERROR(@Problema, 16,1)
-END CATCH
-GO

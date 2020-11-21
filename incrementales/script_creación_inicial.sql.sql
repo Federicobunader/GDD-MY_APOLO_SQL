@@ -84,10 +84,17 @@ CREATE TABLE MY_APOLO_SQL.Auto(
 	auto_cantidad_kilometros DECIMAL(18,0) ,
 	auto_vendido BIT default 0,  --0 significa que no se vendio
 	auto_precio DECIMAL(18,2),
+	auto_nro_chasis NVARCHAR(50),
+    auto_nro_motor NVARCHAR(50),
+	
 
 	CONSTRAINT PK_Auto PRIMARY KEY (auto_id_auto),
 	auto_fabr_id_fabricante NUMERIC(6) not null CONSTRAINT auto_fabr_id_fabricante FOREIGN KEY (auto_fabr_id_fabricante) REFERENCES MY_APOLO_SQL.Fabricante(fabr_id_fabricante),
 	auto_mode_id_modelo NUMERIC(6) not null CONSTRAINT auto_mode_id_modelo FOREIGN KEY (auto_mode_id_modelo) REFERENCES MY_APOLO_SQL.Modelo(mode_id_modelo),
+	auto_tipo_caja_id_tipo_caja NUMERIC(6) not null CONSTRAINT auto_tipo_caja_id_tipo_caja FOREIGN KEY (auto_tipo_caja_id_tipo_caja) REFERENCES MY_APOLO_SQL.Tipo_Caja(tipo_caja_id_tipo_caja),
+    auto_tipo_auto_id_tipo_auto NUMERIC(6) not null CONSTRAINT auto_tipo_auto_id_tipo_auto FOREIGN KEY (auto_tipo_auto_id_tipo_auto) REFERENCES MY_APOLO_SQL.Tipo_Auto(tipo_auto_id_tipo_auto),
+    auto_tipo_trans_id_tipo_transimision NUMERIC(6) not null CONSTRAINT auto_tipo_trans_id_tipo_transimision FOREIGN KEY (auto_tipo_trans_id_tipo_transimision) REFERENCES MY_APOLO_SQL.Tipo_Transmision(tipo_tran_id_tipo_transmision),
+    auto_tipo_moto_id_tipo_moto NUMERIC(6) not null CONSTRAINT auto_tipo_moto_id_tipo_moto FOREIGN KEY (auto_tipo_moto_id_tipo_moto) REFERENCES MY_APOLO_SQL.Tipo_Motor(tipo_moto_id_tipo_motor)
 );
 
 CREATE TABLE MY_APOLO_SQL.Auto_Parte(
@@ -226,6 +233,23 @@ FROM gd_esquema.Maestra
 WHERE TIPO_MOTOR_CODIGO IS NOT NULL
 GO
 
+CREATE PROCEDURE Migracion_Tipo_Auto
+AS
+INSERT INTO MY_APOLO_SQL.Tipo_Auto(tipo_auto_codigo,tipo_auto_descripcion) 
+SELECT DISTINCT TIPO_AUTO_CODIGO,TIPO_AUTO_DESC
+FROM gd_esquema.Maestra
+WHERE TIPO_AUTO_CODIGO IS NOT NULL
+GO
+
+CREATE PROCEDURE Migracion_Tipo_Caja
+AS
+INSERT INTO MY_APOLO_SQL.Tipo_Caja(tipo_caja_codigo,tipo_caja_descripcion) 
+SELECT DISTINCT TIPO_CAJA_CODIGO,TIPO_CAJA_DESC
+FROM gd_esquema.Maestra
+WHERE TIPO_CAJA_CODIGO IS NOT NULL
+GO
+
+
 CREATE PROCEDURE Migracion_Auto_Parte
 AS
 INSERT INTO MY_APOLO_SQL.Auto_Parte (
@@ -337,22 +361,6 @@ WHERE COMPRA_NRO is not null AND AUTO_PARTE_CODIGO is not null
 
 GO
 
-CREATE PROCEDURE Migracion_Tipo_Auto
-AS
-INSERT INTO MY_APOLO_SQL.Tipo_Auto(tipo_auto_codigo,tipo_auto_descripcion) 
-SELECT DISTINCT TIPO_AUTO_CODIGO,TIPO_AUTO_DESC
-FROM gd_esquema.Maestra
-WHERE TIPO_AUTO_CODIGO IS NOT NULL
-GO
-
-CREATE PROCEDURE Migracion_Tipo_Caja
-AS
-INSERT INTO MY_APOLO_SQL.Tipo_Caja(tipo_caja_codigo,tipo_caja_descripcion) 
-SELECT DISTINCT TIPO_CAJA_CODIGO,TIPO_CAJA_DESC
-FROM gd_esquema.Maestra
-WHERE TIPO_CAJA_CODIGO IS NOT NULL
-GO
-
 --ToDO: Revisar el Procedure
 CREATE PROCEDURE Migracion_Auto
 AS
@@ -364,8 +372,10 @@ CREATE TABLE MY_APOLO_SQL.#Autos_Vendidos(
 	auto_cantidad_kilometros DECIMAL(18,0) ,
 	auto_vendido BIT default 1,  --0 significa que no se vendio
 	auto_precio DECIMAL(18,2),
+	auto_nro_chasis NVARCHAR(50),
+    auto_nro_motor NVARCHAR(50),
 
-	CONSTRAINT PK_Autos_Vendidos PRIMARY KEY (auto_id_auto),
+	CONSTRAINT PK_Autos_Vendidos PRIMARY KEY (auto_id_auto)
 );
 
 CREATE TABLE MY_APOLO_SQL.#Autos_Totales(
@@ -375,8 +385,10 @@ CREATE TABLE MY_APOLO_SQL.#Autos_Totales(
 	auto_cantidad_kilometros DECIMAL(18,0) ,
 	auto_vendido BIT default 1,  --0 significa que no se vendio
 	auto_precio DECIMAL(18,2),
-
-	CONSTRAINT PK_Autos_Totales PRIMARY KEY (auto_id_auto),
+	auto_nro_chasis NVARCHAR(50),
+    auto_nro_motor NVARCHAR(50),
+	
+	CONSTRAINT PK_Autos_Totales PRIMARY KEY (auto_id_auto)
 );
 
 
@@ -387,7 +399,15 @@ auto_detalle_patente,
 auto_fecha_alta,
 auto_cantidad_kilometros,
 auto_vendido,
-auto_precio,auto_fabr_id_fabricante,auto_mode_id_modelo) 
+auto_precio,
+auto_nro_chasis,
+auto_nro_motor,
+auto_fabr_id_fabricante,
+auto_mode_id_modelo,
+auto_tipo_caja_id_tipo_caja,
+auto_tipo_auto_id_tipo_auto,
+auto_tipo_trans_id_tipo_transimision,
+auto_tipo_moto_id_tipo_moto) 
 
 SELECT DISTINCT 
 AUTO_PATENTE,
@@ -395,6 +415,8 @@ AUTO_FECHA_ALTA,
 AUTO_CANT_KMS,
  1,
 COMPRA_PRECIO * 1.2,
+AUTO_NRO_CHASIS,
+AUTO_NRO_MOTOR,
 
 (SELECT TOP 1 fabr_id_fabricante 
 FROM MY_APOLO_SQL.Fabricante AS Fabricante
@@ -402,7 +424,24 @@ WHERE Maestra.FABRICANTE_NOMBRE =  Fabricante.fabr_nombre), -- REVISAR
 
 (SELECT TOP 1 mode_id_modelo 
 	FROM MY_APOLO_SQL.Modelo  as ModeloTbl
-WHERE ModeloTbl.mode_nombre = Maestra.MODELO_NOMBRE)
+WHERE ModeloTbl.mode_nombre = Maestra.MODELO_NOMBRE),
+
+(SELECT TOP 1 tipo_caja_id_tipo_caja 
+	FROM MY_APOLO_SQL.Tipo_Caja  as tc
+WHERE tc.tipo_caja_codigo = Maestra.TIPO_CAJA_CODIGO),
+
+(SELECT TOP 1 tipo_auto_id_tipo_auto 
+	FROM MY_APOLO_SQL.Tipo_Auto  as ta
+WHERE ta.tipo_auto_codigo = Maestra.TIPO_AUTO_CODIGO),
+
+(SELECT TOP 1 tipo_tran_id_tipo_transmision 
+	FROM MY_APOLO_SQL.Tipo_Transmision  as tt
+WHERE tt.tipo_tran_codigo = Maestra.TIPO_TRANSMISION_CODIGO),
+
+(SELECT TOP 1 tipo_moto_id_tipo_motor 
+	FROM MY_APOLO_SQL.Tipo_Motor  as tm
+WHERE tm.tipo_moto_codigo = Maestra.TIPO_MOTOR_CODIGO)
+
 
 FROM gd_esquema.Maestra AS Maestra
 WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NULL
@@ -412,7 +451,10 @@ auto_detalle_patente,
 auto_fecha_alta,
 auto_cantidad_kilometros,
 auto_vendido,
-auto_precio) 
+auto_precio,
+auto_nro_chasis,
+auto_nro_motor
+) 
 
 SELECT DISTINCT 
 
@@ -420,7 +462,9 @@ AUTO_PATENTE,
 AUTO_FECHA_ALTA,
 AUTO_CANT_KMS,
 1,
-COMPRA_PRECIO * 1.2
+COMPRA_PRECIO * 1.2,
+AUTO_NRO_CHASIS,
+AUTO_NRO_MOTOR
 
 FROM gd_esquema.Maestra 
 WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NOT NULL
@@ -430,7 +474,10 @@ auto_detalle_patente,
 auto_fecha_alta,
 auto_cantidad_kilometros,
 auto_vendido,
-auto_precio) 
+auto_precio,
+auto_nro_chasis,
+auto_nro_motor
+) 
 
 SELECT DISTINCT 
 
@@ -438,7 +485,9 @@ AUTO_PATENTE,
 AUTO_FECHA_ALTA,
 AUTO_CANT_KMS,
 0,
-COMPRA_PRECIO * 1.2 AS Precio
+COMPRA_PRECIO * 1.2 AS Precio,
+AUTO_NRO_CHASIS,
+AUTO_NRO_MOTOR
 
 FROM gd_esquema.Maestra 
 WHERE AUTO_PATENTE IS NOT NULL AND PRECIO_FACTURADO IS NULL
@@ -495,3 +544,10 @@ BEGIN CATCH
     SELECT @Problema = 'Ocurrió un problema en el script SQL: Numero ' + CONVERT(VARCHAR(10),ERROR_NUMBER()) + ' - ' + ERROR_MESSAGE() + ' - Linea: ' +  CONVERT(VARCHAR(10),ERROR_LINE())
     RAISERROR(@Problema, 16,1)
 END CATCH
+
+/*
+drop table MY_APOLO_SQL.Compra_Auto_Parte,MY_APOLO_SQL.Compra,MY_APOLO_SQL.Factura_Auto_Parte,MY_APOLO_SQL.Factura,MY_APOLO_SQL.Auto,MY_APOLO_SQL.Auto_Parte,MY_APOLO_SQL.Fabricante,MY_APOLO_SQL.Sucursal,MY_APOLO_SQL.Tipo_Auto,MY_APOLO_SQL.Tipo_Caja,MY_APOLO_SQL.Tipo_Transmision,MY_APOLO_SQL.Cliente,MY_APOLO_SQL.Modelo,MY_APOLO_SQL.Tipo_Motor,MY_APOLO_SQL.Ciudad
+drop procedure dbo.Migracion_Auto,dbo.Migracion_Auto_Parte,dbo.Migracion_Ciudad,dbo.Migracion_Cliente,dbo.Migracion_Compra,dbo.Migracion_Compra_Auto_Parte,dbo.Migracion_Fabricante,dbo.Migracion_Factura,dbo.Migracion_Factura_Auto_Parte,dbo.Migracion_Modelo,dbo.Migracion_Sucursal,dbo.Migracion_Tipo_Auto,dbo.Migracion_Tipo_Caja,dbo.Migracion_Tipo_Motor,dbo.Migracion_Tipo_Transmision
+
+select * from MY_APOLO_SQL.Auto
+*/
