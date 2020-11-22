@@ -117,6 +117,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto(
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
+	tiempo_promedio_en_stock INTEGER,
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	tipo_caja_id_tipo_caja NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_id_tipo_caja),
@@ -134,6 +135,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto(
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
+	tiempo_promedio_en_stock INTEGER,
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	tipo_caja_id_tipo_caja NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_id_tipo_caja),
@@ -151,6 +153,8 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte(
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
+	tiempo_promedio_en_stock INTEGER,
+	maxica_cantidad_en_stock INTEGER,
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
@@ -164,6 +168,8 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte(
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
+	tiempo_promedio_en_stock INTEGER,
+	maxica_cantidad_en_stock INTEGER,
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
@@ -190,10 +196,46 @@ GO
 
 CREATE PROCEDURE Migracion_Hecho_Compra_Auto 
 AS
-	INSERT INTO MY_APOLO_SQL.BI_Hecho_Compra_Auto
-	SELECT * 
+	INSERT INTO MY_APOLO_SQL.BI_Hecho_Compra_Auto(
+	cantidad_vendidos, 
+	precio_promedio,
+	ganancia,
+	tiempo_promedio_en_stock,
+	tiem_id_tiempo,
+	tipo_caja_id_tipo_caja,
+	tipo_auto_id_tipo_auto,
+	tipo_moto_id_tipo_motor,
+	tipo_tran_id_tipo_transmision,
+	fabr_id_fabricante,
+	mode_id_modelo,
+	auto_id_auto,
+	clie_id_cliente,
+	sucu_id_sucursal)
+	
+	SELECT 
+
 	FROM MY_APOLO_SQL.Compra C
+
 	JOIN MY_APOLO_SQL.Auto A ON C.comp_auto_id_auto = A.auto_id_auto
+	JOIN MY_APOLO_SQL.Tipo_Caja tc ON A.auto_tipo_caja_id_tipo_caja = tc.tipo_caja_id_tipo_caja
+	JOIN MY_APOLO_SQL.Tipo_Auto tA ON A.auto_tipo_auto_id_tipo_auto = tA.tipo_auto_id_tipo_auto
+	JOIN MY_APOLO_SQL.Tipo_Motor tm ON A.auto_tipo_moto_id_tipo_moto = tm.tipo_moto_id_tipo_motor
+	JOIN MY_APOLO_SQL.Tipo_Transmision tt ON A.auto_tipo_trans_id_tipo_transimision = tt.tipo_tran_id_tipo_transmision
+	JOIN MY_APOLO_SQL.Modelo M ON A.auto_mode_id_modelo = M.mode_id_modelo
+	JOIN MY_APOLO_SQL.Fabricante F ON A.auto_fabr_id_fabricante = F.fabr_id_fabricante
+	JOIN MY_APOLO_SQL.Sucursal S ON C.comp_sucu_id_sucursal = S.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.Ciudad CIU ON S.sucu_ciud_id_ciudad = CIU.ciud_id_ciudad
+	JOIN MY_APOLO_SQL.Cliente CLI ON C.comp_clie_id_cliente = CLI.clie_id_cliente
+
+	JOIN MY_APOLO_SQL.BI_Auto BA ON BA.auto_id_auto = A.auto_id_auto
+	JOIN MY_APOLO_SQL.BI_Tipo_Caja Btc ON Btc.tipo_caja_id_tipo_caja = tc.tipo_caja_id_tipo_caja
+	JOIN MY_APOLO_SQL.BI_Tipo_Auto BtA ON BtA.tipo_auto_id_tipo_auto = tA.tipo_auto_id_tipo_auto
+	JOIN MY_APOLO_SQL.BI_Tipo_Motor Btm ON Btm.tipo_moto_id_tipo_motor = tm.tipo_moto_id_tipo_motor
+	JOIN MY_APOLO_SQL.BI_Tipo_Transmision Btt ON Btt.tipo_tran_id_tipo_transmision = tt.tipo_tran_id_tipo_transmision
+	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
+	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
+	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_ciud_id_ciudad = S.sucu_ciud_id_ciudad
+	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
 
 GO
 
