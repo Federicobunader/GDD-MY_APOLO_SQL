@@ -279,46 +279,65 @@ AS
 
 GO
 
-CREATE PROCEDURE Migracion_Hecho_Venta_Auto 
+CREATE PROCEDURE Migracion_Hecho_Compra_Auto_Parte 
 AS
-	INSERT INTO MY_APOLO_SQL.BI_Hecho_Venta_Auto( 
+	INSERT INTO MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte( 
 	tiem_id_tiempo,
-	tipo_caja_id_tipo_caja,
-	tipo_auto_id_tipo_auto,
-	tipo_moto_id_tipo_motor,
-	tipo_tran_id_tipo_transmision,
 	fabr_id_fabricante,
 	mode_id_modelo,
-	auto_id_auto,
+	auto_id_auto_parte,
 	clie_id_cliente,
 	sucu_id_sucursal)
 	
-	SELECT T.tiem_id_tiempo,Btc.tipo_caja_id_tipo_caja,Bta.tipo_auto_id_tipo_auto,Btm.tipo_moto_id_tipo_motor,Btt.tipo_tran_id_tipo_transmision,
-	BF.fabr_id_fabricante,BM.mode_id_modelo,BA.auto_id_auto,BCLI.clie_id_cliente,BS.sucu_id_sucursal
+	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal
 
-	FROM MY_APOLO_SQL.Factura Fact
+	FROM MY_APOLO_SQL.Compra_Auto_Parte CAP
 
-	JOIN MY_APOLO_SQL.Auto A ON Fact.fact_auto_id_auto = A.auto_id_auto
-	JOIN MY_APOLO_SQL.Tipo_Caja tc ON A.auto_tipo_caja_id_tipo_caja = tc.tipo_caja_id_tipo_caja
-	JOIN MY_APOLO_SQL.Tipo_Auto tA ON A.auto_tipo_auto_id_tipo_auto = tA.tipo_auto_id_tipo_auto
-	JOIN MY_APOLO_SQL.Tipo_Motor tm ON A.auto_tipo_moto_id_tipo_moto = tm.tipo_moto_id_tipo_motor
-	JOIN MY_APOLO_SQL.Tipo_Transmision tt ON A.auto_tipo_trans_id_tipo_transimision = tt.tipo_tran_id_tipo_transmision
-	JOIN MY_APOLO_SQL.Modelo M ON A.auto_mode_id_modelo = M.mode_id_modelo
-	JOIN MY_APOLO_SQL.Fabricante F ON A.auto_fabr_id_fabricante = F.fabr_id_fabricante
-	JOIN MY_APOLO_SQL.Sucursal S ON Fact.fact_sucu_id_sucursal = S.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.Auto_Parte AP ON CAP.comp_part_part_id_auto_parte = AP.part_id_auto_parte
+	JOIN MY_APOLO_SQL.Modelo M ON AP.part_modelo_id = M.mode_id_modelo
+	JOIN MY_APOLO_SQL.Fabricante F ON AP.part_fabricante_id = F.fabr_id_fabricante
+	JOIN MY_APOLO_SQL.Compra C ON C.comp_id_compra = CAP.comp_part_comp_id_compra
+	JOIN MY_APOLO_SQL.Sucursal S ON C.comp_sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.Ciudad CIU ON S.sucu_ciud_id_ciudad = CIU.ciud_id_ciudad
-	JOIN MY_APOLO_SQL.Cliente CLI ON Fact.fact_clie_id_cliente = CLI.clie_id_cliente
+	JOIN MY_APOLO_SQL.Cliente CLI ON C.comp_clie_id_cliente = CLI.clie_id_cliente
 
-	JOIN MY_APOLO_SQL.BI_Auto BA ON BA.auto_id_auto = A.auto_id_auto
-	JOIN MY_APOLO_SQL.BI_Tipo_Caja Btc ON Btc.tipo_caja_id_tipo_caja = tc.tipo_caja_id_tipo_caja
-	JOIN MY_APOLO_SQL.BI_Tipo_Auto BtA ON BtA.tipo_auto_id_tipo_auto = tA.tipo_auto_id_tipo_auto
-	JOIN MY_APOLO_SQL.BI_Tipo_Motor Btm ON Btm.tipo_moto_id_tipo_motor = tm.tipo_moto_id_tipo_motor
-	JOIN MY_APOLO_SQL.BI_Tipo_Transmision Btt ON Btt.tipo_tran_id_tipo_transmision = tt.tipo_tran_id_tipo_transmision
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BAP ON BAP.part_id_auto_parte = AP.part_id_auto_parte
 	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
 	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_ciud_id_ciudad = S.sucu_ciud_id_ciudad
 	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
-	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(Fact.fact_fecha) AND T.tiem_mes = MONTH(Fact.fact_fecha)
+	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(C.comp_fecha) AND T.tiem_mes = MONTH(C.comp_fecha)
+
+GO
+
+CREATE PROCEDURE Migracion_Hecho_Venta_Auto_Parte 
+AS
+	INSERT INTO MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte( 
+	tiem_id_tiempo,
+	fabr_id_fabricante,
+	mode_id_modelo,
+	auto_id_auto_parte,
+	clie_id_cliente,
+	sucu_id_sucursal)
+	
+	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal
+
+	FROM MY_APOLO_SQL.Factura_Auto_Parte FAP
+
+	JOIN MY_APOLO_SQL.Auto_Parte AP ON FAP.fact_part_part_id_auto_parte = AP.part_id_auto_parte
+	JOIN MY_APOLO_SQL.Modelo M ON AP.part_modelo_id = M.mode_id_modelo
+	JOIN MY_APOLO_SQL.Fabricante F ON AP.part_fabricante_id = F.fabr_id_fabricante
+	JOIN MY_APOLO_SQL.Factura FT ON FT.fact_id_factura = FAP.fact_part_fact_id_factura
+	JOIN MY_APOLO_SQL.Sucursal S ON FT.fact_sucu_id_sucursal = S.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.Ciudad CIU ON S.sucu_ciud_id_ciudad = CIU.ciud_id_ciudad
+	JOIN MY_APOLO_SQL.Cliente CLI ON FT.fact_clie_id_cliente = CLI.clie_id_cliente
+
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BAP ON BAP.part_id_auto_parte = AP.part_id_auto_parte
+	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
+	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
+	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_ciud_id_ciudad = S.sucu_ciud_id_ciudad
+	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
+	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(FT.fact_fecha) AND T.tiem_mes = MONTH(FT.fact_fecha)
 
 GO
 
