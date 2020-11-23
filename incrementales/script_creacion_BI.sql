@@ -23,10 +23,9 @@ CREATE TABLE MY_APOLO_SQL.BI_Sucursal(
 	sucu_mail NVARCHAR(255),
 	sucu_telefono DECIMAL(18,0),
 	sucu_direccion NVARCHAR(255),
+	sucu_ciudad NVARCHAR(255)
 
 	CONSTRAINT PK_BI_Sucursal PRIMARY KEY (sucu_id_sucursal),
-
-	sucu_ciud_id_ciudad NUMERIC(6) CONSTRAINT sucu_ciud_id_ciudad FOREIGN KEY (sucu_ciud_id_ciudad) REFERENCES MY_APOLO_SQL.Ciudad(ciud_id_ciudad)
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Modelo(
@@ -230,7 +229,7 @@ AS
 	JOIN MY_APOLO_SQL.BI_Tipo_Transmision Btt ON Btt.tipo_tran_id_tipo_transmision = tt.tipo_tran_id_tipo_transmision
 	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
-	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_ciud_id_ciudad = S.sucu_ciud_id_ciudad
+	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
 	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(C.comp_fecha) AND T.tiem_mes = MONTH(C.comp_fecha)
 
@@ -273,8 +272,8 @@ AS
 	JOIN MY_APOLO_SQL.BI_Tipo_Transmision Btt ON Btt.tipo_tran_id_tipo_transmision = tt.tipo_tran_id_tipo_transmision
 	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
-	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_ciud_id_ciudad = S.sucu_ciud_id_ciudad
 	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
+	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(Fact.fact_fecha) AND T.tiem_mes = MONTH(Fact.fact_fecha)
 
 GO
@@ -304,7 +303,7 @@ AS
 	JOIN MY_APOLO_SQL.BI_Auto_Parte BAP ON BAP.part_id_auto_parte = AP.part_id_auto_parte
 	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
-	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_ciud_id_ciudad = S.sucu_ciud_id_ciudad
+	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
 	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(C.comp_fecha) AND T.tiem_mes = MONTH(C.comp_fecha)
 
@@ -335,21 +334,13 @@ AS
 	JOIN MY_APOLO_SQL.BI_Auto_Parte BAP ON BAP.part_id_auto_parte = AP.part_id_auto_parte
 	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
-	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_ciud_id_ciudad = S.sucu_ciud_id_ciudad
+	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_id_sucursal = S.sucu_ciud_id_ciudad
 	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
 	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(FT.fact_fecha) AND T.tiem_mes = MONTH(FT.fact_fecha)
 
 GO
 
-CREATE PROCEDURE Migracion_Ciudad
-AS
-	INSERT INTO MY_APOLO_SQL.Ciudad(ciud_nombre) 
-	SELECT DISTINCT SUCURSAL_CIUDAD
-	FROM gd_esquema.Maestra 
-	WHERE SUCURSAL_CIUDAD IS NOT NULL
-GO
-
-CREATE PROCEDURE Migracion_Sucursal
+CREATE PROCEDURE Migracion_BI_Sucursal
 AS
 INSERT INTO MY_APOLO_SQL.Sucursal(sucu_mail,sucu_telefono,sucu_direccion,sucu_ciud_id_ciudad) 
 SELECT DISTINCT SUCURSAL_MAIL,SUCURSAL_TELEFONO,SUCURSAL_DIRECCION,
@@ -387,90 +378,36 @@ GO
 
 CREATE PROCEDURE Migracion_BI_Auto_Parte
 AS
-INSERT INTO MY_APOLO_SQL.BI_Auto_Parte ( 
-	,part_cantidad_stock
-	,part_precio
-	,part_codigo 
-	,part_descripcion)
+INSERT INTO MY_APOLO_SQL.BI_Auto_Parte (
+	part_id_auto_parte,
+	part_cantidad_stock,
+	part_precio,
+	part_codigo,
+	part_descripcion)
 
 SELECT * FROM MY_APOLO_SQL.Auto_Parte
 
 GO
 
 
-CREATE PROCEDURE Migracion_Cliente
+CREATE PROCEDURE Migracion_BI_Cliente
 AS
-INSERT INTO MY_APOLO_SQL.Cliente (
+INSERT INTO MY_APOLO_SQL.BI_Cliente (
     clie_nombre,
     clie_apellido,
     clie_direccion,
     clie_dni,
     clie_fecha_nacimiento,
-    clie_mail)
-SELECT * FROM MY_APOLO_SQL.Cliente
+    clie_mail,
+	clie_rango_edad)
+SELECT clie_nombre,clie_apellido,clie_direccion,clie_dni,clie_fecha_nacimiento,clie_mail,
+CASE 	WHEN YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) >= 18 AND YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) < 30 THEN 1
+		WHEN YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) >= 30 AND YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) < 50 THEN 2
+		WHEN YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) > 50 THEN 3
+		ELSE 'ERROR: EL CLIENTE TIENE QUE SER MAYOR DE EDAD'
+		END
 
-GO
-
-CREATE PROCEDURE Migracion_Factura
-AS
-INSERT INTO MY_APOLO_SQL.Factura (fact_fecha,fact_numero,fact_precio_facturado,fact_clie_id_cliente,fact_sucu_id_sucursal,fact_auto_id_auto)
-SELECT
-DISTINCT
-FACTURA_FECHA,
-FACTURA_NRO,
-PRECIO_FACTURADO,
-clie_id_cliente,
-sucu_id_sucursal,
-auto_id_auto
- FROM gd_esquema.Maestra 
- JOIN MY_APOLO_SQL.Cliente as cli on FAC_CLIENTE_DNI = cli.clie_dni
- JOIN MY_APOLO_SQL.Sucursal as sucu on FAC_SUCURSAL_DIRECCION = sucu.sucu_direccion
- LEFT JOIN MY_APOLO_SQL.Auto AS Auto ON AUTO_PATENTE = auto.auto_detalle_patente
-where FACTURA_NRO IS NOT NULL
-ORDER BY FACTURA_NRO
-
-GO
-
-CREATE PROCEDURE Migracion_Factura_Auto_Parte
-AS
-INSERT INTO MY_APOLO_SQL.Factura_Auto_Parte (fact_part_fact_id_factura,fact_part_part_id_auto_parte,fact_part_cantidad)
-SELECT
-(SELECT TOP 1 fact_id_factura FROM MY_APOLO_SQL.Factura F
-WHERE F.fact_numero = FACTURA_NRO AND F.fact_fecha = FACTURA_FECHA),
-(SELECT TOP 1 part_id_auto_parte FROM MY_APOLO_SQL.Auto_Parte AP
-WHERE AP.part_codigo = AUTO_PARTE_CODIGO AND AP.part_descripcion = AUTO_PARTE_DESCRIPCION),
-CANT_FACTURADA
-FROM gd_esquema.Maestra
-
-GO
-
-
-CREATE PROCEDURE Migracion_Compra
-AS
-INSERT INTO MY_APOLO_SQL.Compra (comp_fecha,comp_numero,comp_precio_compra,comp_clie_id_cliente,comp_sucu_id_sucursal,comp_auto_id_auto)
---Compra AutoParte
-SELECT compra_fecha,COMPRA_NRO, SUM(COMPRA_PRECIO) AS precio,  cliente.clie_id_cliente, sucursal.sucu_id_sucursal,NULL AS auto_id
-FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Sucursal ON SUCURSAL_DIRECCION = sucu_direccion
-JOIN MY_APOLO_SQL.Cliente ON CLIENTE_DNI = clie_dni AND CLIENTE_APELLIDO = clie_apellido
-WHERE  COMPRA_NRO IS NOT NULL AND AUTO_PATENTE IS NULL
-GROUP BY COMPRA_NRO, compra_fecha, sucursal.sucu_id_sucursal, cliente.clie_id_cliente
-UNION
---Compra Auto
-SELECT compra_fecha,COMPRA_NRO, COMPRA_PRECIO AS precio, cliente.clie_id_cliente, sucursal.sucu_id_sucursal, auto.auto_id_auto AS auto_id
-FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Auto ON AUTO_PATENTE = auto_detalle_patente
-JOIN MY_APOLO_SQL.Sucursal ON SUCURSAL_DIRECCION = sucu_direccion
-JOIN MY_APOLO_SQL.Cliente ON CLIENTE_DNI = clie_dni AND CLIENTE_APELLIDO = clie_apellido
-WHERE  COMPRA_NRO IS NOT NULL AND AUTO_PATENTE IS NOT NULL
-GROUP BY COMPRA_NRO, compra_fecha, sucursal.sucu_id_sucursal, cliente.clie_id_cliente, auto_id_auto, COMPRA_PRECIO
-
-GO
-
-CREATE PROCEDURE Migracion_Compra_Auto_Parte
-AS
-INSERT INTO MY_APOLO_SQL.Compra_Auto_Parte (comp_part_comp_id_compra, comp_part_part_id_auto_parte, comp_part_cantidad)
-SELECT comp_id_compra,part_id_auto_parte, COMPRA_CANT FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Compra ON COMPRA_NRO = comp_numero
-JOIN MY_APOLO_SQL.Auto_Parte ON AUTO_PARTE_CODIGO = auto_parte.part_codigo
-WHERE COMPRA_NRO is not null AND AUTO_PARTE_CODIGO is not null
+FROM MY_APOLO_SQL.Cliente C 
 
 GO
 
@@ -502,3 +439,11 @@ SELECT * FROM MY_APOLO_SQL.Auto
 
 ---------------------DROPEO DE TABLAS-------------------------
 
+/*
+
+drop table MY_APOLO_SQL.BI_Auto,MY_APOLO_SQL.BI_Auto_Parte,MY_APOLO_SQL.BI_Fabricante,MY_APOLO_SQL.BI_Sucursal,MY_APOLO_SQL.BI_Tipo_Auto,MY_APOLO_SQL.BI_Tipo_Caja,MY_APOLO_SQL.BI_Tipo_Transmision,MY_APOLO_SQL.BI_Cliente,MY_APOLO_SQL.BI_Modelo,MY_APOLO_SQL.BI_Tipo_Motor
+drop table MY_APOLO_SQL.BI_Hecho_Compra_Auto,MY_APOLO_SQL.BI_Hecho_Venta_Auto,MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte,MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte
+drop procedure dbo.Migracion_BI_Auto,dbo.Migracion_BI_Auto_Parte,dbo.Migracion_BI_Cliente,dbo.Migracion_BI_Compra,dbo.Migracion_BI_Compra_Auto_Parte,dbo.Migracion_BI_Fabricante,dbo.Migracion_BI_Modelo,dbo.Migracion_BI_Sucursal,dbo.Migracion_BI_Tipo_Auto,dbo.Migracion_BI_Tipo_Caja,dbo.Migracion_BI_Tipo_Motor,dbo.Migracion_BI_Tipo_Transmision
+drop procedure dbo.Migracion_Hecho_Compra_Auto,dbo.Migracion_Hecho_Venta_Auto,dbo.Migracion_Hecho_Compra_Auto_Parte,dbo.Migracion_Hecho_Venta_Auto_Parte
+
+*/
