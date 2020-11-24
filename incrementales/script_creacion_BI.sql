@@ -1,7 +1,6 @@
 USE GD2C2020
 GO
 
-
 BEGIN TRY
     BEGIN TRAN
 
@@ -12,14 +11,14 @@ END
 
 -------------------CREACION TABLAS---------------------------
 CREATE TABLE MY_APOLO_SQL.BI_Tiempo(
-	tiem_id_tiempo NUMERIC(6) IDENTITY (1,1) NOT NULL ,
+	tiem_id_tiempo NUMERIC(6) NOT NULL ,
 	tiem_anio integer NOT NULL ,
 	tiem_mes integer NOT NULL
 
 	CONSTRAINT PK_BI_Tiempo PRIMARY KEY (tiem_id_tiempo),
 );
 CREATE TABLE MY_APOLO_SQL.BI_Sucursal(
-	sucu_id_sucursal NUMERIC(6) IDENTITY(1,1) NOT NULL , 
+	sucu_id_sucursal NUMERIC(6) NOT NULL , 
 	sucu_mail NVARCHAR(255),
 	sucu_telefono DECIMAL(18,0),
 	sucu_direccion NVARCHAR(255),
@@ -29,7 +28,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Sucursal(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Modelo(
-	mode_id_modelo NUMERIC(6) IDENTITY,
+	mode_id_modelo NUMERIC(6),
 	mode_codigo DECIMAL(18,0) ,
 	mode_nombre NVARCHAR(255) ,
 	mode_potencia DECIMAL(18,0) ,
@@ -38,14 +37,14 @@ CREATE TABLE MY_APOLO_SQL.BI_Modelo(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Fabricante(
-	fabr_id_fabricante NUMERIC(6) IDENTITY (1,1) NOT NULL ,
+	fabr_id_fabricante NUMERIC(6) NOT NULL ,
 	fabr_nombre nvarchar(255) NOT NULL ,
 
 	CONSTRAINT PK_BI_Fabricante PRIMARY KEY (fabr_id_fabricante),
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Tipo_Transmision(
-	tipo_tran_id_tipo_transmision NUMERIC(6) IDENTITY,
+	tipo_tran_id_tipo_transmision NUMERIC(6),
 	tipo_tran_codigo DECIMAL(18,0) ,
 	tipo_tran_descripcion NVARCHAR(255) ,
 
@@ -53,14 +52,14 @@ CREATE TABLE MY_APOLO_SQL.BI_Tipo_Transmision(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Tipo_Motor(
-	tipo_moto_id_tipo_motor NUMERIC(6) IDENTITY,
+	tipo_moto_id_tipo_motor NUMERIC(6),
 	tipo_moto_codigo DECIMAL(18,0) ,
 
 	CONSTRAINT PK_BI_Tipo_Motor PRIMARY KEY (tipo_moto_id_tipo_motor)
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Tipo_Auto(
-	tipo_auto_id_tipo_auto NUMERIC(6) IDENTITY,
+	tipo_auto_id_tipo_auto NUMERIC(6),
 	tipo_auto_codigo DECIMAL(18,0) ,
 	tipo_auto_descripcion NVARCHAR(255) ,
 
@@ -68,7 +67,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Tipo_Auto(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Tipo_Caja(
-	tipo_caja_id_tipo_caja NUMERIC(6) IDENTITY,
+	tipo_caja_id_tipo_caja NUMERIC(6),
 	tipo_caja_codigo DECIMAL(18,0) ,
 	tipo_caja_descripcion NVARCHAR(255) ,
 
@@ -76,7 +75,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Tipo_Caja(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Auto(
-	auto_id_auto NUMERIC(6) IDENTITY(1,1) NOT NULL ,
+	auto_id_auto NUMERIC(6) NOT NULL ,
 	auto_detalle_patente NVARCHAR(50) ,
 	auto_fecha_alta DATETIME2(3) ,
 	auto_cantidad_kilometros DECIMAL(18,0) ,
@@ -88,7 +87,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Auto(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Auto_Parte(
-	part_id_auto_parte NUMERIC(6) IDENTITY(1,1) NOT NULL  ,
+	part_id_auto_parte NUMERIC(6) NOT NULL  ,
 	part_cantidad_stock DECIMAL(18,0),
 	part_precio DECIMAL(18,2) ,
 	part_codigo DECIMAL(18,0) ,
@@ -99,7 +98,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Auto_Parte(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Cliente(
-	clie_id_cliente NUMERIC(6) IDENTITY(1,1) NOT NULL , 
+	clie_id_cliente NUMERIC(6) NOT NULL , 
 	clie_nombre NVARCHAR(255) ,
 	clie_apellido NVARCHAR(255) ,
 	clie_direccion NVARCHAR(255) ,
@@ -113,6 +112,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Cliente(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto(
+	fact_compra_auto_id int identity(1,1) NOT NULL,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
 	tiempo_promedio_en_stock INTEGER,
@@ -130,6 +130,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto(
+	fact_hecho_venta_auto_id int identity(1,1) NOT NULL,
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
@@ -148,6 +149,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte(
+	fact_hecho_compra_auto_parte_id int identity(1,1) NOT NULL,
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
@@ -163,11 +165,12 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte(
 );
 
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte(
+	fact_hecho_venta_auto_parte_id int identity(1,1) NOT NULL,
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
 	tiempo_promedio_en_stock INTEGER,
-	maxica_cantidad_en_stock INTEGER,
+	maxima_cantidad_en_stock INTEGER,
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
@@ -191,6 +194,7 @@ END CATCH
 
 GO
 -------------------CREACION PROCEDIMIENTOS---------------------------
+
 
 CREATE PROCEDURE Migracion_Hecho_Compra_Auto 
 AS
@@ -342,37 +346,34 @@ GO
 
 CREATE PROCEDURE Migracion_BI_Sucursal
 AS
-INSERT INTO MY_APOLO_SQL.Sucursal(sucu_mail,sucu_telefono,sucu_direccion,sucu_ciud_id_ciudad) 
-SELECT DISTINCT SUCURSAL_MAIL,SUCURSAL_TELEFONO,SUCURSAL_DIRECCION,
-(SELECT TOP 1 ciud_id_ciudad 
-	FROM MY_APOLO_SQL.Ciudad C1
-WHERE C1.ciud_nombre = Maestra.SUCURSAL_CIUDAD)
-FROM gd_esquema.Maestra
-WHERE SUCURSAL_MAIL IS NOT NULL
+INSERT INTO MY_APOLO_SQL.BI_Sucursal(sucu_id_sucursal, sucu_mail,sucu_telefono,sucu_direccion,sucu_ciudad) 
+SELECT s.sucu_id_sucursal, s.sucu_mail,s.sucu_telefono,s.sucu_direccion, ciud_nombre
+FROM MY_APOLO_SQL.Sucursal s
+join MY_APOLO_SQL.Ciudad c on s.sucu_ciud_id_ciudad = c.ciud_id_ciudad
 GO
 
 CREATE PROCEDURE Migracion_BI_Fabricante
 AS
-INSERT INTO MY_APOLO_SQL.BI_Fabricante(fabr_nombre) 
+INSERT INTO MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante, fabr_nombre) 
 SELECT * FROM MY_APOLO_SQL.Fabricante
 GO
 
 CREATE PROCEDURE Migracion_BI_Modelo
 AS
-INSERT INTO MY_APOLO_SQL.BI_Modelo(mode_codigo,mode_nombre,mode_potencia) 
-SELECT * 
+INSERT INTO MY_APOLO_SQL.BI_Modelo(mode_id_modelo, mode_codigo,mode_nombre,mode_potencia) 
+SELECT *
 FROM MY_APOLO_SQL.Modelo
 GO
 
 CREATE PROCEDURE Migracion_BI_Tipo_Transmision
 AS
-INSERT INTO MY_APOLO_SQL.BI_Tipo_Transmision(tipo_tran_codigo,tipo_tran_descripcion) 
+INSERT INTO MY_APOLO_SQL.BI_Tipo_Transmision(tipo_tran_id_tipo_transmision, tipo_tran_codigo,tipo_tran_descripcion) 
 SELECT * FROM MY_APOLO_SQL.Tipo_Transmision
 GO
 
 CREATE PROCEDURE Migracion_BI_Tipo_Motor
 AS
-INSERT INTO MY_APOLO_SQL.BI_Tipo_Motor(tipo_moto_codigo) 
+INSERT INTO MY_APOLO_SQL.BI_Tipo_Motor(tipo_moto_id_tipo_motor, tipo_moto_codigo) 
 SELECT * FROM MY_APOLO_SQL.Tipo_Motor
 GO
 
@@ -385,14 +386,14 @@ INSERT INTO MY_APOLO_SQL.BI_Auto_Parte (
 	part_codigo,
 	part_descripcion)
 
-SELECT * FROM MY_APOLO_SQL.Auto_Parte
+SELECT part_id_auto_parte, part_cantidad_stock, part_precio, part_codigo, part_descripcion FROM MY_APOLO_SQL.Auto_Parte
 
 GO
-
 
 CREATE PROCEDURE Migracion_BI_Cliente
 AS
 INSERT INTO MY_APOLO_SQL.BI_Cliente (
+	clie_id_cliente,
     clie_nombre,
     clie_apellido,
     clie_direccion,
@@ -400,26 +401,25 @@ INSERT INTO MY_APOLO_SQL.BI_Cliente (
     clie_fecha_nacimiento,
     clie_mail,
 	clie_rango_edad)
-SELECT clie_nombre,clie_apellido,clie_direccion,clie_dni,clie_fecha_nacimiento,clie_mail,
+SELECT clie_id_cliente, clie_nombre,clie_apellido,clie_direccion,clie_dni,clie_fecha_nacimiento,clie_mail,
 CASE 	WHEN YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) >= 18 AND YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) < 30 THEN 1
 		WHEN YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) >= 30 AND YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) < 50 THEN 2
-		WHEN YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) > 50 THEN 3
+		WHEN YEAR(GETDATE()) - YEAR(C.clie_fecha_nacimiento) >= 50 THEN 3
 		ELSE 'ERROR: EL CLIENTE TIENE QUE SER MAYOR DE EDAD'
 		END
 
 FROM MY_APOLO_SQL.Cliente C 
-
 GO
 
 CREATE PROCEDURE Migracion_BI_Tipo_Auto
 AS
-INSERT INTO MY_APOLO_SQL.BI_Tipo_Auto(tipo_auto_codigo,tipo_auto_descripcion) 
+INSERT INTO MY_APOLO_SQL.BI_Tipo_Auto(tipo_auto_id_tipo_auto, tipo_auto_codigo,tipo_auto_descripcion) 
 SELECT * FROM MY_APOLO_SQL.Tipo_Auto
 GO
 
 CREATE PROCEDURE Migracion_BI_Tipo_Caja
 AS
-INSERT INTO MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_codigo,tipo_caja_descripcion) 
+INSERT INTO MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_id_tipo_caja, tipo_caja_codigo,tipo_caja_descripcion) 
 SELECT * FROM MY_APOLO_SQL.Tipo_Caja
 GO
 
@@ -427,23 +427,16 @@ GO
 CREATE PROCEDURE Migracion_BI_Auto
 AS
 BEGIN
-INSERT INTO 
-MY_APOLO_SQL.BI_Auto(
-auto_detalle_patente,
-auto_fecha_alta,
-auto_cantidad_kilometros,
-auto_vendido,
-auto_precio) 
-
-SELECT * FROM MY_APOLO_SQL.Auto
+INSERT INTO MY_APOLO_SQL.BI_Auto(auto_id_auto, auto_detalle_patente,auto_fecha_alta,auto_cantidad_kilometros,auto_vendido,auto_precio) 
+SELECT auto_id_auto, auto_detalle_patente,auto_fecha_alta, auto_cantidad_kilometros, auto_vendido, auto_precio FROM [MY_APOLO_SQL].[Auto]
+END
 
 ---------------------DROPEO DE TABLAS-------------------------
 
-/*
 
+/*
 drop table MY_APOLO_SQL.BI_Auto,MY_APOLO_SQL.BI_Auto_Parte,MY_APOLO_SQL.BI_Fabricante,MY_APOLO_SQL.BI_Sucursal,MY_APOLO_SQL.BI_Tipo_Auto,MY_APOLO_SQL.BI_Tipo_Caja,MY_APOLO_SQL.BI_Tipo_Transmision,MY_APOLO_SQL.BI_Cliente,MY_APOLO_SQL.BI_Modelo,MY_APOLO_SQL.BI_Tipo_Motor
 drop table MY_APOLO_SQL.BI_Hecho_Compra_Auto,MY_APOLO_SQL.BI_Hecho_Venta_Auto,MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte,MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte
 drop procedure dbo.Migracion_BI_Auto,dbo.Migracion_BI_Auto_Parte,dbo.Migracion_BI_Cliente,dbo.Migracion_BI_Compra,dbo.Migracion_BI_Compra_Auto_Parte,dbo.Migracion_BI_Fabricante,dbo.Migracion_BI_Modelo,dbo.Migracion_BI_Sucursal,dbo.Migracion_BI_Tipo_Auto,dbo.Migracion_BI_Tipo_Caja,dbo.Migracion_BI_Tipo_Motor,dbo.Migracion_BI_Tipo_Transmision
 drop procedure dbo.Migracion_Hecho_Compra_Auto,dbo.Migracion_Hecho_Venta_Auto,dbo.Migracion_Hecho_Compra_Auto_Parte,dbo.Migracion_Hecho_Venta_Auto_Parte
-
 */
