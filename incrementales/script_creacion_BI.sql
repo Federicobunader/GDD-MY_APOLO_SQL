@@ -431,6 +431,41 @@ INSERT INTO MY_APOLO_SQL.BI_Auto(auto_id_auto, auto_detalle_patente,auto_fecha_a
 SELECT auto_id_auto, auto_detalle_patente,auto_fecha_alta, auto_cantidad_kilometros, auto_vendido, auto_precio FROM [MY_APOLO_SQL].[Auto]
 END
 
+---------------------EJECUCION PROCEDURES--------------------
+
+BEGIN TRY
+    BEGIN TRAN
+--Migracion de Datos
+
+EXEC Migracion_BI_Sucursal --OK
+EXEC Migracion_BI_Auto --OK
+EXEC Migracion_BI_Tipo_Caja --OK
+EXEC Migracion_BI_Tipo_Auto --OK
+EXEC Migracion_BI_Cliente --OK
+EXEC Migracion_BI_Auto_Parte --OK
+EXEC Migracion_BI_Tipo_Motor --OK
+EXEC Migracion_BI_Tipo_Motor --OK
+EXEC Migracion_BI_Tipo_Transmision --OK
+EXEC Migracion_BI_Modelo --OK
+EXEC Migracion_BI_Fabricante --OK
+EXEC Migracion_Hecho_Venta_Auto_Parte --OK
+EXEC Migracion_Hecho_Compra_Auto_Parte --OK
+EXEC Migracion_Hecho_Venta_Auto --OK
+EXEC Migracion_Hecho_Compra_Auto --OK
+
+
+    COMMIT TRAN
+END TRY
+
+BEGIN CATCH
+    ROLLBACK TRAN
+
+    DECLARE @Problema VARCHAR(MAX)
+    SELECT @Problema = 'Ocurrió un problema en el script SQL: Numero ' + CONVERT(VARCHAR(10),ERROR_NUMBER()) + ' - ' + ERROR_MESSAGE() + ' - Linea: ' +  CONVERT(VARCHAR(10),ERROR_LINE())
+    RAISERROR(@Problema, 16,1)
+END CATCH
+
+
 ---------------------DROPEO DE TABLAS-------------------------
 
 
