@@ -230,7 +230,7 @@ AS
 INSERT INTO MY_APOLO_SQL.Tipo_Motor(tipo_moto_codigo) 
 SELECT DISTINCT TIPO_MOTOR_CODIGO
 FROM gd_esquema.Maestra
-WHERE TIPO_MOTOR_CODIGO IS NOT NULL
+WHERE TIPO_MOTOR_CODIGO IS NOT NULL ORDER BY TIPO_MOTOR_CODIGO ASC
 GO
 
 CREATE PROCEDURE Migracion_Tipo_Auto
@@ -527,11 +527,11 @@ EXEC Migracion_Tipo_Auto --OK
 EXEC Migracion_Tipo_Caja --OK
 EXEC Migracion_Auto_Parte --OK
 EXEC Migracion_Cliente --OK
-EXEC Migracion_Factura --OK
-EXEC Migracion_Compra_Auto_Parte --OK
 EXEC Migracion_Auto --OK
-EXEC Migracion_Compra --OK
+EXEC Migracion_Factura --OK
 EXEC Migracion_Factura_Auto_Parte --OK
+EXEC Migracion_Compra --OK
+EXEC Migracion_Compra_Auto_Parte --OK
 
 
     COMMIT TRAN
@@ -549,8 +549,11 @@ END CATCH
 drop table MY_APOLO_SQL.Compra_Auto_Parte,MY_APOLO_SQL.Compra,MY_APOLO_SQL.Factura_Auto_Parte,MY_APOLO_SQL.Factura,MY_APOLO_SQL.Auto,MY_APOLO_SQL.Auto_Parte,MY_APOLO_SQL.Fabricante,MY_APOLO_SQL.Sucursal,MY_APOLO_SQL.Tipo_Auto,MY_APOLO_SQL.Tipo_Caja,MY_APOLO_SQL.Tipo_Transmision,MY_APOLO_SQL.Cliente,MY_APOLO_SQL.Modelo,MY_APOLO_SQL.Tipo_Motor,MY_APOLO_SQL.Ciudad
 drop procedure dbo.Migracion_Auto,dbo.Migracion_Auto_Parte,dbo.Migracion_Ciudad,dbo.Migracion_Cliente,dbo.Migracion_Compra,dbo.Migracion_Compra_Auto_Parte,dbo.Migracion_Fabricante,dbo.Migracion_Factura,dbo.Migracion_Factura_Auto_Parte,dbo.Migracion_Modelo,dbo.Migracion_Sucursal,dbo.Migracion_Tipo_Auto,dbo.Migracion_Tipo_Caja,dbo.Migracion_Tipo_Motor,dbo.Migracion_Tipo_Transmision
 
-select * from MY_APOLO_SQL.Auto
+select * from MY_APOLO_SQL.Auto -> 71.946 autos
 
-select * from MY_APOLO_SQL.Compra
+select * from MY_APOLO_SQL.Compra -> 72.504 compras
+
+select * from MY_APOLO_SQL.Compra_Auto_Parte
 
 */
+

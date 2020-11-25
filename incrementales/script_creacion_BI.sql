@@ -214,7 +214,7 @@ AS
 	BF.fabr_id_fabricante,BM.mode_id_modelo,BA.auto_id_auto,BCLI.clie_id_cliente,BS.sucu_id_sucursal
 
 	FROM MY_APOLO_SQL.Compra C
-
+	
 	JOIN MY_APOLO_SQL.Auto A ON C.comp_auto_id_auto = A.auto_id_auto
 	JOIN MY_APOLO_SQL.Tipo_Caja tc ON A.auto_tipo_caja_id_tipo_caja = tc.tipo_caja_id_tipo_caja
 	JOIN MY_APOLO_SQL.Tipo_Auto tA ON A.auto_tipo_auto_id_tipo_auto = tA.tipo_auto_id_tipo_auto
@@ -225,7 +225,7 @@ AS
 	JOIN MY_APOLO_SQL.Sucursal S ON C.comp_sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.Ciudad CIU ON S.sucu_ciud_id_ciudad = CIU.ciud_id_ciudad
 	JOIN MY_APOLO_SQL.Cliente CLI ON C.comp_clie_id_cliente = CLI.clie_id_cliente
-
+	
 	JOIN MY_APOLO_SQL.BI_Auto BA ON BA.auto_id_auto = A.auto_id_auto
 	JOIN MY_APOLO_SQL.BI_Tipo_Caja Btc ON Btc.tipo_caja_id_tipo_caja = tc.tipo_caja_id_tipo_caja
 	JOIN MY_APOLO_SQL.BI_Tipo_Auto BtA ON BtA.tipo_auto_id_tipo_auto = tA.tipo_auto_id_tipo_auto
@@ -236,7 +236,7 @@ AS
 	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
 	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(C.comp_fecha) AND T.tiem_mes = MONTH(C.comp_fecha)
-
+	
 GO
 
 CREATE PROCEDURE Migracion_Hecho_Venta_Auto 
@@ -295,7 +295,7 @@ AS
 	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal
 
 	FROM MY_APOLO_SQL.Compra_Auto_Parte CAP
-
+	
 	JOIN MY_APOLO_SQL.Auto_Parte AP ON CAP.comp_part_part_id_auto_parte = AP.part_id_auto_parte
 	JOIN MY_APOLO_SQL.Modelo M ON AP.part_modelo_id = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.Fabricante F ON AP.part_fabricante_id = F.fabr_id_fabricante
@@ -303,14 +303,15 @@ AS
 	JOIN MY_APOLO_SQL.Sucursal S ON C.comp_sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.Ciudad CIU ON S.sucu_ciud_id_ciudad = CIU.ciud_id_ciudad
 	JOIN MY_APOLO_SQL.Cliente CLI ON C.comp_clie_id_cliente = CLI.clie_id_cliente
-
+	
+	
 	JOIN MY_APOLO_SQL.BI_Auto_Parte BAP ON BAP.part_id_auto_parte = AP.part_id_auto_parte
 	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
 	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
 	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(C.comp_fecha) AND T.tiem_mes = MONTH(C.comp_fecha)
-
+	
 GO
 
 CREATE PROCEDURE Migracion_Hecho_Venta_Auto_Parte 
@@ -323,10 +324,9 @@ AS
 	clie_id_cliente,
 	sucu_id_sucursal)
 	
-	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal
-
+	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal 
 	FROM MY_APOLO_SQL.Factura_Auto_Parte FAP
-
+	
 	JOIN MY_APOLO_SQL.Auto_Parte AP ON FAP.fact_part_part_id_auto_parte = AP.part_id_auto_parte
 	JOIN MY_APOLO_SQL.Modelo M ON AP.part_modelo_id = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.Fabricante F ON AP.part_fabricante_id = F.fabr_id_fabricante
@@ -334,7 +334,7 @@ AS
 	JOIN MY_APOLO_SQL.Sucursal S ON FT.fact_sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.Ciudad CIU ON S.sucu_ciud_id_ciudad = CIU.ciud_id_ciudad
 	JOIN MY_APOLO_SQL.Cliente CLI ON FT.fact_clie_id_cliente = CLI.clie_id_cliente
-
+	
 	JOIN MY_APOLO_SQL.BI_Auto_Parte BAP ON BAP.part_id_auto_parte = AP.part_id_auto_parte
 	JOIN MY_APOLO_SQL.BI_Modelo BM ON BM.mode_id_modelo = M.mode_id_modelo
 	JOIN MY_APOLO_SQL.BI_Fabricante BF ON BF.fabr_id_fabricante = F.fabr_id_fabricante
@@ -374,7 +374,7 @@ GO
 CREATE PROCEDURE Migracion_BI_Tipo_Motor
 AS
 INSERT INTO MY_APOLO_SQL.BI_Tipo_Motor(tipo_moto_id_tipo_motor, tipo_moto_codigo) 
-SELECT * FROM MY_APOLO_SQL.Tipo_Motor
+SELECT tipo_moto_id_tipo_motor,tipo_moto_codigo FROM MY_APOLO_SQL.Tipo_Motor
 GO
 
 CREATE PROCEDURE Migracion_BI_Auto_Parte
@@ -423,16 +423,20 @@ INSERT INTO MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_id_tipo_caja, tipo_caja_codigo,t
 SELECT * FROM MY_APOLO_SQL.Tipo_Caja
 GO
 
+GO
 --ToDO: Revisar el Procedure
 CREATE PROCEDURE Migracion_BI_Auto
 AS
 BEGIN
 INSERT INTO MY_APOLO_SQL.BI_Auto(auto_id_auto, auto_detalle_patente,auto_fecha_alta,auto_cantidad_kilometros,auto_vendido,auto_precio) 
-SELECT auto_id_auto, auto_detalle_patente,auto_fecha_alta, auto_cantidad_kilometros, auto_vendido, auto_precio FROM [MY_APOLO_SQL].[Auto]
+SELECT auto_id_auto, auto_detalle_patente,auto_fecha_alta, auto_cantidad_kilometros, auto_vendido, auto_precio FROM MY_APOLO_SQL.Auto
 END
+
+GO
 
 ---------------------EJECUCION PROCEDURES--------------------
 
+PRINT 'Procedures Creados Correctamente'
 BEGIN TRY
     BEGIN TRAN
 --Migracion de Datos
@@ -443,7 +447,6 @@ EXEC Migracion_BI_Tipo_Caja --OK
 EXEC Migracion_BI_Tipo_Auto --OK
 EXEC Migracion_BI_Cliente --OK
 EXEC Migracion_BI_Auto_Parte --OK
-EXEC Migracion_BI_Tipo_Motor --OK
 EXEC Migracion_BI_Tipo_Motor --OK
 EXEC Migracion_BI_Tipo_Transmision --OK
 EXEC Migracion_BI_Modelo --OK
@@ -470,8 +473,26 @@ END CATCH
 
 
 /*
-drop table MY_APOLO_SQL.BI_Auto,MY_APOLO_SQL.BI_Auto_Parte,MY_APOLO_SQL.BI_Fabricante,MY_APOLO_SQL.BI_Sucursal,MY_APOLO_SQL.BI_Tipo_Auto,MY_APOLO_SQL.BI_Tipo_Caja,MY_APOLO_SQL.BI_Tipo_Transmision,MY_APOLO_SQL.BI_Cliente,MY_APOLO_SQL.BI_Modelo,MY_APOLO_SQL.BI_Tipo_Motor
+drop table MY_APOLO_SQL.BI_Tiempo,MY_APOLO_SQL.BI_Auto,MY_APOLO_SQL.BI_Auto_Parte,MY_APOLO_SQL.BI_Fabricante,MY_APOLO_SQL.BI_Sucursal,MY_APOLO_SQL.BI_Tipo_Auto,MY_APOLO_SQL.BI_Tipo_Caja,MY_APOLO_SQL.BI_Tipo_Transmision,MY_APOLO_SQL.BI_Cliente,MY_APOLO_SQL.BI_Modelo,MY_APOLO_SQL.BI_Tipo_Motor
 drop table MY_APOLO_SQL.BI_Hecho_Compra_Auto,MY_APOLO_SQL.BI_Hecho_Venta_Auto,MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte,MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte
 drop procedure dbo.Migracion_BI_Auto,dbo.Migracion_BI_Auto_Parte,dbo.Migracion_BI_Cliente,dbo.Migracion_BI_Compra,dbo.Migracion_BI_Compra_Auto_Parte,dbo.Migracion_BI_Fabricante,dbo.Migracion_BI_Modelo,dbo.Migracion_BI_Sucursal,dbo.Migracion_BI_Tipo_Auto,dbo.Migracion_BI_Tipo_Caja,dbo.Migracion_BI_Tipo_Motor,dbo.Migracion_BI_Tipo_Transmision
 drop procedure dbo.Migracion_Hecho_Compra_Auto,dbo.Migracion_Hecho_Venta_Auto,dbo.Migracion_Hecho_Compra_Auto_Parte,dbo.Migracion_Hecho_Venta_Auto_Parte
+
+*/
+
+select * from MY_APOLO_SQL.BI_Auto
+
+select * from MY_APOLO_SQL.BI_Tipo_Motor
+
+
+select * from MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte
+
+GO
+
+/*
+CREATE VIEW cant_automoviles_vendidos_y_comprados
+	AS 
+	SELECT title, type, price, pubdate
+	FROM titles
+GO
 */
