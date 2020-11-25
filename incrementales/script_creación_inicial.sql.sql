@@ -336,12 +336,13 @@ CREATE PROCEDURE Migracion_Compra
 AS
 INSERT INTO MY_APOLO_SQL.Compra (comp_fecha,comp_numero,comp_precio_compra,comp_clie_id_cliente,comp_sucu_id_sucursal,comp_auto_id_auto)
 --Compra AutoParte
+/*
 SELECT compra_fecha,COMPRA_NRO, SUM(COMPRA_PRECIO) AS precio,  cliente.clie_id_cliente, sucursal.sucu_id_sucursal,NULL AS auto_id
 FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Sucursal ON SUCURSAL_DIRECCION = sucu_direccion
 JOIN MY_APOLO_SQL.Cliente ON CLIENTE_DNI = clie_dni AND CLIENTE_APELLIDO = clie_apellido
 WHERE  COMPRA_NRO IS NOT NULL AND AUTO_PATENTE IS NULL
 GROUP BY COMPRA_NRO, compra_fecha, sucursal.sucu_id_sucursal, cliente.clie_id_cliente
-UNION
+UNION*/
 --Compra Auto
 SELECT compra_fecha,COMPRA_NRO, COMPRA_PRECIO AS precio, cliente.clie_id_cliente, sucursal.sucu_id_sucursal, auto.auto_id_auto AS auto_id
 FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Auto ON AUTO_PATENTE = auto_detalle_patente
@@ -355,9 +356,16 @@ GO
 CREATE PROCEDURE Migracion_Compra_Auto_Parte
 AS
 INSERT INTO MY_APOLO_SQL.Compra_Auto_Parte (comp_part_comp_id_compra, comp_part_part_id_auto_parte, comp_part_cantidad)
+/*
 SELECT comp_id_compra,part_id_auto_parte, COMPRA_CANT FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Compra ON COMPRA_NRO = comp_numero
 JOIN MY_APOLO_SQL.Auto_Parte ON AUTO_PARTE_CODIGO = auto_parte.part_codigo
-WHERE COMPRA_NRO is not null AND AUTO_PARTE_CODIGO is not null
+WHERE COMPRA_NRO is not null AND AUTO_PARTE_CODIGO is not null*/
+
+SELECT compra_fecha,COMPRA_NRO, SUM(COMPRA_PRECIO) AS precio,  cliente.clie_id_cliente, sucursal.sucu_id_sucursal
+FROM gd_esquema.Maestra JOIN MY_APOLO_SQL.Sucursal ON SUCURSAL_DIRECCION = sucu_direccion
+JOIN MY_APOLO_SQL.Cliente ON CLIENTE_DNI = clie_dni AND CLIENTE_APELLIDO = clie_apellido
+WHERE  COMPRA_NRO IS NOT NULL AND AUTO_PATENTE IS NULL
+GROUP BY COMPRA_NRO, compra_fecha, sucursal.sucu_id_sucursal, cliente.clie_id_cliente
 
 GO
 

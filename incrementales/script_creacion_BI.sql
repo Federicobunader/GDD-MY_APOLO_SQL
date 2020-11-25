@@ -434,6 +434,17 @@ END
 
 GO
 
+CREATE PROCEDURE Migracion_BI_Tiempo
+AS
+BEGIN
+SELECT DISTINCT YEAR(comp_fecha), MONTH(comp_fecha) FROM MY_APOLO_SQL.Compra
+UNION
+SELECT DISTINCT YEAR(fact_fecha), MONTH(fact_fecha) FROM MY_APOLO_SQL.Factura
+
+END
+
+GO
+
 ---------------------EJECUCION PROCEDURES--------------------
 
 PRINT 'Procedures Creados Correctamente'
@@ -441,6 +452,7 @@ BEGIN TRY
     BEGIN TRAN
 --Migracion de Datos
 
+EXEC Migracion_BI_Tiempo --OK
 EXEC Migracion_BI_Sucursal --OK
 EXEC Migracion_BI_Auto --OK
 EXEC Migracion_BI_Tipo_Caja --OK
