@@ -11,8 +11,8 @@ END
 
 -------------------CREACION TABLAS---------------------------
 CREATE TABLE MY_APOLO_SQL.BI_Tiempo(
-	tiem_id_tiempo NUMERIC(6) NOT NULL ,
-	tiem_anio integer NOT NULL ,
+	tiem_id_tiempo NUMERIC(6) NOT NULL IDENTITY,
+	tiem_anio integer NOT NULL,
 	tiem_mes integer NOT NULL
 
 	CONSTRAINT PK_BI_Tiempo PRIMARY KEY (tiem_id_tiempo),
@@ -311,7 +311,8 @@ AS
 	JOIN MY_APOLO_SQL.BI_Sucursal BS ON BS.sucu_id_sucursal = S.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.BI_Cliente BCLI ON BCLI.clie_id_cliente = CLI.clie_id_cliente
 	JOIN MY_APOLO_SQL.BI_Tiempo T ON T.tiem_anio = YEAR(C.comp_fecha) AND T.tiem_mes = MONTH(C.comp_fecha)
-	
+
+
 GO
 
 CREATE PROCEDURE Migracion_Hecho_Venta_Auto_Parte 
@@ -437,10 +438,10 @@ GO
 CREATE PROCEDURE Migracion_BI_Tiempo
 AS
 BEGIN
+INSERT INTO MY_APOLO_SQL.BI_Tiempo(tiem_anio,tiem_mes)
 SELECT DISTINCT YEAR(comp_fecha), MONTH(comp_fecha) FROM MY_APOLO_SQL.Compra
 UNION
 SELECT DISTINCT YEAR(fact_fecha), MONTH(fact_fecha) FROM MY_APOLO_SQL.Factura
-
 END
 
 GO
@@ -490,15 +491,23 @@ drop table MY_APOLO_SQL.BI_Hecho_Compra_Auto,MY_APOLO_SQL.BI_Hecho_Venta_Auto,MY
 drop procedure dbo.Migracion_BI_Auto,dbo.Migracion_BI_Auto_Parte,dbo.Migracion_BI_Cliente,dbo.Migracion_BI_Compra,dbo.Migracion_BI_Compra_Auto_Parte,dbo.Migracion_BI_Fabricante,dbo.Migracion_BI_Modelo,dbo.Migracion_BI_Sucursal,dbo.Migracion_BI_Tipo_Auto,dbo.Migracion_BI_Tipo_Caja,dbo.Migracion_BI_Tipo_Motor,dbo.Migracion_BI_Tipo_Transmision
 drop procedure dbo.Migracion_Hecho_Compra_Auto,dbo.Migracion_Hecho_Venta_Auto,dbo.Migracion_Hecho_Compra_Auto_Parte,dbo.Migracion_Hecho_Venta_Auto_Parte
 
+drop table MY_APOLO_SQL.BI_Tiempo
+DROP PROCEDURE dbo.Migracion_BI_Tiempo
+
 */
 
+/*
 select * from MY_APOLO_SQL.BI_Auto
 
 select * from MY_APOLO_SQL.BI_Tipo_Motor
 
+select * from MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte
 
 select * from MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte
 
+select * from MY_APOLO_SQL.BI_Tiempo
+
+*/
 GO
 
 /*
