@@ -131,6 +131,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto(
 
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto(
 	fact_hecho_venta_auto_id int identity(1,1) NOT NULL,
+	fecha_factura datetime2(3),
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
@@ -166,6 +167,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte(
 
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte(
 	fact_hecho_venta_auto_parte_id int identity(1,1) NOT NULL,
+	fecha_factura datetime2(3),
 	cantidad_vendidos INTEGER,
 	precio_promedio DECIMAL(18,2),
 	ganancia DECIMAL (18,2),
@@ -251,10 +253,11 @@ AS
 	mode_id_modelo,
 	auto_id_auto,
 	clie_id_cliente,
-	sucu_id_sucursal)
+	sucu_id_sucursal,
+	fecha_factura)
 	
 	SELECT T.tiem_id_tiempo,Btc.tipo_caja_id_tipo_caja,Bta.tipo_auto_id_tipo_auto,Btm.tipo_moto_id_tipo_motor,Btt.tipo_tran_id_tipo_transmision,
-	BF.fabr_id_fabricante,BM.mode_id_modelo,BA.auto_id_auto,BCLI.clie_id_cliente,BS.sucu_id_sucursal
+	BF.fabr_id_fabricante,BM.mode_id_modelo,BA.auto_id_auto,BCLI.clie_id_cliente,BS.sucu_id_sucursal,Fact.fact_fecha
 
 	FROM MY_APOLO_SQL.Factura Fact
 
@@ -323,9 +326,10 @@ AS
 	mode_id_modelo,
 	auto_id_auto_parte,
 	clie_id_cliente,
-	sucu_id_sucursal)
+	sucu_id_sucursal,
+	fecha_factura)
 	
-	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal 
+	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal,FT.fact_fecha 
 	FROM MY_APOLO_SQL.Factura_Auto_Parte FAP
 	
 	JOIN MY_APOLO_SQL.Auto_Parte AP ON FAP.fact_part_part_id_auto_parte = AP.part_id_auto_parte
@@ -526,7 +530,6 @@ CREATE VIEW cant_automoviles_vendidos_y_comprados
 	JOIN MY_APOLO_SQL.BI_Sucursal SC ON SC.sucu_id_sucursal = HC.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HC.tiem_id_tiempo = TC.tiem_id_tiempo
 	GROUP BY tiem_mes,HC.sucu_id_sucursal
-	ORDER BY MES ASC,SUCURSAL ASC
 	
 GO
 
@@ -572,9 +575,7 @@ CREATE VIEW ganancias_auto
 	JOIN MY_APOLO_SQL.BI_Sucursal SC ON SC.sucu_id_sucursal = HC.sucu_id_sucursal
 	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HC.tiem_id_tiempo = TC.tiem_id_tiempo
 	JOIN MY_APOLO_SQL.BI_Auto BAC ON HC.auto_id_auto = BAC.auto_id_auto
-	GROUP BY tiem_mes,HC.sucu_id_sucursal
-	ORDER BY MES ASC,SUCURSAL ASC
-	
+	GROUP BY tiem_mes,HC.sucu_id_sucursal	
 GO
 
 CREATE VIEW promedio_tiempo_en_stock
@@ -625,7 +626,6 @@ CREATE VIEW ganancias_auto_parte
 	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HPC.tiem_id_tiempo = TC.tiem_id_tiempo
 	JOIN MY_APOLO_SQL.BI_Auto_Parte BAPC ON HPC.auto_id_auto_parte = BAPC.part_id_auto_parte
 	GROUP BY tiem_mes,HPC.sucu_id_sucursal
-	ORDER BY MES ASC,SUCURSAL ASC
 	
 GO
 
@@ -642,6 +642,5 @@ CREATE VIEW maxima_cantidad_stock
 	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HPC.tiem_id_tiempo = TC.tiem_id_tiempo
 	JOIN MY_APOLO_SQL.BI_Auto_Parte BAPC ON HPC.auto_id_auto_parte = BAPC.part_id_auto_parte
 	GROUP BY tiem_anio,HPC.sucu_id_sucursal
-	ORDER BY AÑO ASC,SUCURSAL ASC
 	
 GO
