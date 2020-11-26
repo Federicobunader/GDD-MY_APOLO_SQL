@@ -513,6 +513,7 @@ GO
 
 CREATE VIEW cant_automoviles_vendidos_y_comprados
 	AS 
+	/*Cantidad de automóviles, vendidos y comprados x sucursal y mes*/
 
 	SELECT COUNT(DISTINCT HC.auto_id_auto) AS CANTIDAD_AUTOMOVILES_COMPRADOS,
 	(SELECT COUNT(DISTINCT HV.auto_id_auto) FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
@@ -525,5 +526,81 @@ CREATE VIEW cant_automoviles_vendidos_y_comprados
 	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HC.tiem_id_tiempo = TC.tiem_id_tiempo
 	GROUP BY tiem_mes,HC.sucu_id_sucursal
 	ORDER BY MES ASC,SUCURSAL ASC
+	
+GO
+
+CREATE VIEW precio_promedio_auto
+	AS 
+	
+	/*Precio promedio de automóviles, vendidos y comprados.*/
+	
+	SELECT AVG(BAC.auto_precio) AS PRECIO_PROMEDIO_DE_COMPRA,
+	(SELECT AVG(BAV.auto_precio)  FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
+	JOIN MY_APOLO_SQL.BI_Auto BAV ON HV.auto_id_auto = BAV.auto_id_auto) AS PRECIO_PROMEDIO_DE_VENTA
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto HC
+	JOIN MY_APOLO_SQL.BI_Auto BAC ON HC.auto_id_auto = BAC.auto_id_auto 
+
+/*	
+	Esta seria la opcion si con precio promedio de autos vendiso y comprados se refiere basicamente al precio promedio de todos los autos.
+	Da un numero horrible, la opcion de arriba calcula el precio promedio de las compras y ventas x saparado.
+
+	SELECT SUM(BAC.auto_precio) +
+	(SELECT SUM(BAV.auto_precio) FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
+	JOIN MY_APOLO_SQL.BI_Auto BAV ON HV.auto_id_auto = BAV.auto_id_auto) / (COUNT(DISTINCT HC.auto_id_auto) + (SELECT COUNT(HV.auto_id_auto) FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV))
+	AS PRECIO_PROMEDIO_DE_VENTA
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto HC
+	JOIN MY_APOLO_SQL.BI_Auto BAC ON HC.auto_id_auto = BAC.auto_id_auto 
+	*/
+GO
+
+CREATE VIEW ganancias_auto
+	AS 
+	
+	/*Ganancias (precio de venta – precio de compra) x Sucursal x mes*/
+
+	SELECT 
+	(SELECT SUM(BAV.auto_precio) FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
+	JOIN MY_APOLO_SQL.BI_Sucursal SV ON SV.sucu_id_sucursal = HV.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.BI_Tiempo TV ON HV.tiem_id_tiempo = TV.tiem_id_tiempo
+	JOIN MY_APOLO_SQL.BI_Auto BAV ON HV.auto_id_auto = BAV.auto_id_auto
+	WHERE TV.tiem_mes = TC.tiem_mes AND HV.sucu_id_sucursal = HC.sucu_id_sucursal) - SUM(BAC.auto_precio)
+	 AS GANANCIAS,
+
+	tiem_mes AS MES, HC.sucu_id_sucursal AS SUCURSAL
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto HC
+	JOIN MY_APOLO_SQL.BI_Sucursal SC ON SC.sucu_id_sucursal = HC.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HC.tiem_id_tiempo = TC.tiem_id_tiempo
+	JOIN MY_APOLO_SQL.BI_Auto BAC ON HC.auto_id_auto = BAC.auto_id_auto
+	GROUP BY tiem_mes,HC.sucu_id_sucursal
+	ORDER BY MES ASC,SUCURSAL ASC
+	
+GO
+
+CREATE VIEW promedio_tiempo_en_stock
+	AS 
+	
+	/*Promedio de tiempo en stock de cada modelo de automóvil.*/
+
+	SELECT AVG(DATEDIFF(DAY,BAC.auto_fecha_alta,)) AS PRECIO_PROMEDIO_DE_COMPRA,
+	(SELECT HV.  FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
+	JOIN MY_APOLO_SQL.BI_Auto BAV ON HV.auto_id_auto = BAV.auto_id_auto) AS PRECIO_PROMEDIO_DE_VENTA
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto HC
+	JOIN MY_APOLO_SQL.BI_Auto BAC ON HC.auto_id_auto = BAC.auto_id_auto 
+	
+GO
+
+CREATE VIEW precio_promedio_auto_parte
+	AS 
+	
+	/*Precio promedio de cada autoparte, vendida y comprada.*/
+
+	SELECT AVG(BAC.auto_precio) AS PRECIO_PROMEDIO_DE_COMPRA,
+	(SELECT AVG(BAV.auto_precio)  FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
+	JOIN MY_APOLO_SQL.BI_Auto BAV ON HV.auto_id_auto = BAV.auto_id_auto) AS PRECIO_PROMEDIO_DE_VENTA
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto HC
+	JOIN MY_APOLO_SQL.BI_Auto BAC ON HC.auto_id_auto = BAC.auto_id_auto 
+
+	SELECT  FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte HCP
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BAP ON HCP.auto_id_auto_parte = BAP.part_id_auto_parte
 	
 GO
