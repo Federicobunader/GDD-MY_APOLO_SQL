@@ -510,10 +510,20 @@ select * from MY_APOLO_SQL.BI_Tiempo
 */
 GO
 
-/*
+
 CREATE VIEW cant_automoviles_vendidos_y_comprados
 	AS 
-	SELECT title, type, price, pubdate
-	FROM titles
+
+	SELECT COUNT(DISTINCT HC.auto_id_auto) AS CANTIDAD_AUTOMOVILES_COMPRADOS,
+	(SELECT COUNT(DISTINCT HV.auto_id_auto) FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
+	JOIN MY_APOLO_SQL.BI_Sucursal SV ON SV.sucu_id_sucursal = HV.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.BI_Tiempo TV ON HV.tiem_id_tiempo = TV.tiem_id_tiempo
+	WHERE TV.tiem_mes = TC.tiem_mes AND HV.sucu_id_sucursal = HC.sucu_id_sucursal) AS CANTIDAD_AUTOMOVILES_VENDIDOS,
+	tiem_mes AS MES, HC.sucu_id_sucursal AS SUCURSAL
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto HC
+	JOIN MY_APOLO_SQL.BI_Sucursal SC ON SC.sucu_id_sucursal = HC.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HC.tiem_id_tiempo = TC.tiem_id_tiempo
+	GROUP BY tiem_mes,HC.sucu_id_sucursal
+	ORDER BY MES ASC,SUCURSAL ASC
+	
 GO
-*/
