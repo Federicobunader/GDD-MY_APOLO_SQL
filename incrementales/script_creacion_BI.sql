@@ -510,6 +510,7 @@ select * from MY_APOLO_SQL.BI_Tiempo
 */
 GO
 
+/*========================== VISTAS AUTO ==========================================*/
 
 CREATE VIEW cant_automoviles_vendidos_y_comprados
 	AS 
@@ -589,18 +590,58 @@ CREATE VIEW promedio_tiempo_en_stock
 	
 GO
 
+/*========================== VISTAS AUTO PARTE ==========================================*/
+
+
 CREATE VIEW precio_promedio_auto_parte
 	AS 
 	
 	/*Precio promedio de cada autoparte, vendida y comprada.*/
 
-	SELECT AVG(BAC.auto_precio) AS PRECIO_PROMEDIO_DE_COMPRA,
-	(SELECT AVG(BAV.auto_precio)  FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
-	JOIN MY_APOLO_SQL.BI_Auto BAV ON HV.auto_id_auto = BAV.auto_id_auto) AS PRECIO_PROMEDIO_DE_VENTA
-	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto HC
-	JOIN MY_APOLO_SQL.BI_Auto BAC ON HC.auto_id_auto = BAC.auto_id_auto 
+	SELECT AVG(BACP.part_precio) AS PRECIO_PROMEDIO_DE_COMPRA,
+	(SELECT AVG(BAVP.part_precio) FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte HVP
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BAVP ON HVP.auto_id_auto_parte = BAVP.part_id_auto_parte) PRECIO_PROMEDIO_DE_VENTA
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte HCP
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BACP ON HCP.auto_id_auto_parte = BACP.part_id_auto_parte
+	
+GO
 
-	SELECT  FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte HCP
-	JOIN MY_APOLO_SQL.BI_Auto_Parte BAP ON HCP.auto_id_auto_parte = BAP.part_id_auto_parte
+CREATE VIEW ganancias_auto_parte
+	AS 
+	
+	/*Ganancias (precio de venta – precio de compra) x Sucursal x mes*/
+
+	SELECT 
+	(SELECT SUM(BAPV.part_precio) FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte HPV
+	JOIN MY_APOLO_SQL.BI_Sucursal SV ON SV.sucu_id_sucursal = HPV.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.BI_Tiempo TV ON HPV.tiem_id_tiempo = TV.tiem_id_tiempo
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BAPV ON HPV.auto_id_auto_parte = BAPV.part_id_auto_parte
+	WHERE TV.tiem_mes = TC.tiem_mes AND HPV.sucu_id_sucursal = HPC.sucu_id_sucursal) - SUM(BAPC.part_precio)
+	 AS GANANCIAS,
+
+	tiem_mes AS MES, HPC.sucu_id_sucursal AS SUCURSAL
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte HPC
+	JOIN MY_APOLO_SQL.BI_Sucursal SC ON SC.sucu_id_sucursal = HPC.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HPC.tiem_id_tiempo = TC.tiem_id_tiempo
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BAPC ON HPC.auto_id_auto_parte = BAPC.part_id_auto_parte
+	GROUP BY tiem_mes,HPC.sucu_id_sucursal
+	ORDER BY MES ASC,SUCURSAL ASC
+	
+GO
+
+CREATE VIEW maxima_cantidad_stock
+	AS 
+	
+	/*Máxima cantidad de stock por cada sucursal (anual)*/
+	/* REVISAR */
+
+	SELECT MAX(BAPC.part_cantidad_stock) AS STOCK_MAXIMO,
+	tiem_anio AS AÑO, HPC.sucu_id_sucursal AS SUCURSAL
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte HPC
+	JOIN MY_APOLO_SQL.BI_Sucursal SC ON SC.sucu_id_sucursal = HPC.sucu_id_sucursal
+	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HPC.tiem_id_tiempo = TC.tiem_id_tiempo
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BAPC ON HPC.auto_id_auto_parte = BAPC.part_id_auto_parte
+	GROUP BY tiem_anio,HPC.sucu_id_sucursal
+	ORDER BY AÑO ASC,SUCURSAL ASC
 	
 GO
