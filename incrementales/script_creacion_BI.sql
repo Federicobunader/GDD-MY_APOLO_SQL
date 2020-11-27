@@ -113,9 +113,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Cliente(
 
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto(
 	fact_compra_auto_id int identity(1,1) NOT NULL,
-	precio_promedio DECIMAL(18,2),
-	ganancia DECIMAL (18,2),
-	tiempo_promedio_en_stock INTEGER,
+	fecha_compra datetime2(3),
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	tipo_caja_id_tipo_caja NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_id_tipo_caja),
@@ -132,10 +130,6 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto(
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto(
 	fact_hecho_venta_auto_id int identity(1,1) NOT NULL,
 	fecha_factura datetime2(3),
-	cantidad_vendidos INTEGER,
-	precio_promedio DECIMAL(18,2),
-	ganancia DECIMAL (18,2),
-	tiempo_promedio_en_stock INTEGER,
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	tipo_caja_id_tipo_caja NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tipo_Caja(tipo_caja_id_tipo_caja),
@@ -151,11 +145,7 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto(
 
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte(
 	fact_hecho_compra_auto_parte_id int identity(1,1) NOT NULL,
-	cantidad_vendidos INTEGER,
-	precio_promedio DECIMAL(18,2),
-	ganancia DECIMAL (18,2),
-	tiempo_promedio_en_stock INTEGER,
-	maxica_cantidad_en_stock INTEGER,
+	fecha_compra datetime2(3),
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
@@ -168,11 +158,6 @@ CREATE TABLE MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte(
 CREATE TABLE MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte(
 	fact_hecho_venta_auto_parte_id int identity(1,1) NOT NULL,
 	fecha_factura datetime2(3),
-	cantidad_vendidos INTEGER,
-	precio_promedio DECIMAL(18,2),
-	ganancia DECIMAL (18,2),
-	tiempo_promedio_en_stock INTEGER,
-	maxima_cantidad_en_stock INTEGER,
 
 	tiem_id_tiempo NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Tiempo(tiem_id_tiempo),
 	fabr_id_fabricante NUMERIC(6) NOT NULL FOREIGN KEY REFERENCES MY_APOLO_SQL.BI_Fabricante(fabr_id_fabricante),
@@ -210,10 +195,11 @@ AS
 	mode_id_modelo,
 	auto_id_auto,
 	clie_id_cliente,
-	sucu_id_sucursal)
+	sucu_id_sucursal,
+	fecha_compra)
 	
 	SELECT T.tiem_id_tiempo,Btc.tipo_caja_id_tipo_caja,Bta.tipo_auto_id_tipo_auto,Btm.tipo_moto_id_tipo_motor,Btt.tipo_tran_id_tipo_transmision,
-	BF.fabr_id_fabricante,BM.mode_id_modelo,BA.auto_id_auto,BCLI.clie_id_cliente,BS.sucu_id_sucursal
+	BF.fabr_id_fabricante,BM.mode_id_modelo,BA.auto_id_auto,BCLI.clie_id_cliente,BS.sucu_id_sucursal,C.comp_fecha
 
 	FROM MY_APOLO_SQL.Compra C
 	
@@ -293,9 +279,10 @@ AS
 	mode_id_modelo,
 	auto_id_auto_parte,
 	clie_id_cliente,
-	sucu_id_sucursal)
+	sucu_id_sucursal,
+	fecha_compra)
 	
-	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal
+	SELECT T.tiem_id_tiempo,BF.fabr_id_fabricante,BM.mode_id_modelo,BAP.part_id_auto_parte,BCLI.clie_id_cliente,BS.sucu_id_sucursal,C.comp_fecha
 
 	FROM MY_APOLO_SQL.Compra_Auto_Parte CAP
 	
@@ -498,10 +485,16 @@ drop procedure dbo.Migracion_Hecho_Compra_Auto,dbo.Migracion_Hecho_Venta_Auto,db
 drop table MY_APOLO_SQL.BI_Tiempo
 DROP PROCEDURE dbo.Migracion_BI_Tiempo
 
+drop view dbo.cant_automoviles_vendidos_y_comprados,dbo.ganancias_auto,dbo.ganancias_auto_parte,dbo.maxima_cantidad_stock,dbo.precio_promedio_auto,
+dbo.precio_promedio_auto_parte,dbo.promedio_tiempo_en_stock_auto,dbo.promedio_tiempo_en_stock_auto_parte
+
+
 */
 
 /*
 select * from MY_APOLO_SQL.BI_Auto
+
+select * from MY_APOLO_SQL.BI_Auto_Parte
 
 select * from MY_APOLO_SQL.BI_Tipo_Motor
 
@@ -578,16 +571,16 @@ CREATE VIEW ganancias_auto
 	GROUP BY tiem_mes,HC.sucu_id_sucursal	
 GO
 
-CREATE VIEW promedio_tiempo_en_stock
+CREATE VIEW promedio_tiempo_en_stock_auto
 	AS 
 	
 	/*Promedio de tiempo en stock de cada modelo de automóvil.*/
 
-	SELECT AVG(DATEDIFF(DAY,BAC.auto_fecha_alta,)) AS PRECIO_PROMEDIO_DE_COMPRA,
-	(SELECT HV.  FROM MY_APOLO_SQL.BI_Hecho_Venta_Auto HV
-	JOIN MY_APOLO_SQL.BI_Auto BAV ON HV.auto_id_auto = BAV.auto_id_auto) AS PRECIO_PROMEDIO_DE_VENTA
+	SELECT HC.auto_id_auto AS AUTO,AVG(DATEDIFF(DAY,HC.fecha_compra,HV.fecha_factura)) AS TIEMPO_PROMEDIO_EN_STOCK
 	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto HC
 	JOIN MY_APOLO_SQL.BI_Auto BAC ON HC.auto_id_auto = BAC.auto_id_auto 
+	JOIN MY_APOLO_SQL.BI_Hecho_Venta_Auto HV ON HC.auto_id_auto = HV.auto_id_auto
+	GROUP BY HC.auto_id_auto
 	
 GO
 
@@ -626,6 +619,19 @@ CREATE VIEW ganancias_auto_parte
 	JOIN MY_APOLO_SQL.BI_Tiempo TC ON HPC.tiem_id_tiempo = TC.tiem_id_tiempo
 	JOIN MY_APOLO_SQL.BI_Auto_Parte BAPC ON HPC.auto_id_auto_parte = BAPC.part_id_auto_parte
 	GROUP BY tiem_mes,HPC.sucu_id_sucursal
+	
+GO
+
+CREATE VIEW promedio_tiempo_en_stock_auto_parte
+	AS 
+	
+	/*Promedio de tiempo en stock de cada modelo de auto parte.*/
+
+	SELECT HCP.auto_id_auto_parte AS AUTO_PARTE,AVG(DATEDIFF(DAY,HCP.fecha_compra,HVP.fecha_factura)) AS TIEMPO_PROMEDIO_EN_STOCK
+	FROM MY_APOLO_SQL.BI_Hecho_Compra_Auto_Parte HCP
+	JOIN MY_APOLO_SQL.BI_Auto_Parte BAPC ON HCP.auto_id_auto_parte = BAPC.part_id_auto_parte 
+	JOIN MY_APOLO_SQL.BI_Hecho_Venta_Auto_Parte HVP ON HVP.auto_id_auto_parte = HCP.auto_id_auto_parte
+	GROUP BY HCP.auto_id_auto_parte
 	
 GO
 
